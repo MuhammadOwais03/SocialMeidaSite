@@ -1,11 +1,8 @@
-
-
 from pathlib import Path
 import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 
 SECRET_KEY = "django-insecure-ec)d2i#((_^n95)p%c7pcapl1pr%idl-d*%1mc1e^y()o9&b+_"
@@ -15,9 +12,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-
-
 INSTALLED_APPS = [
+    "daphne",
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -27,6 +24,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "api",
     "sm",
+    "notification",
 ]
 
 MIDDLEWARE = [
@@ -57,8 +55,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "Pinsta.wsgi.application"
+# WSGI_APPLICATION = "Pinsta.wsgi.application"
+ASGI_APPLICATION = "Pinsta.asgi.application"
 
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
 
 
 DATABASES = {
@@ -67,8 +75,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -87,7 +93,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -97,16 +102,12 @@ USE_I18N = True
 USE_TZ = True
 
 
+STATIC_URL = "/static/"
 
-STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
