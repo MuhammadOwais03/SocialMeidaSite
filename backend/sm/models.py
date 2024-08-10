@@ -12,16 +12,17 @@ from django.dispatch import receiver
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(max_length=100)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    bio = models.TextField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(upload_to="images/", null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    is_loggedIn = models.BooleanField(default=False)
+    is_loggedIn = models.BooleanField(default=False, null=True, blank=True)
 
 
 class Post(models.Model):
-    author = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
     post_image = models.ImageField(upload_to="post_img/", null=True, blank=True)
     video_file = models.FileField(upload_to="post_vid/", null=True, blank=True)
@@ -31,12 +32,12 @@ class Post(models.Model):
 
 
 class Gallery(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
 
 class Story(models.Model):
-    # author = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    # author = models.ForeignKey(User, on_delete=models.CASCADE)
     # caption = models.TextField()
     # post_image = models.ImageField(upload_to='post_img/', null=True, blank=True)
     # video_file = models.FileField(upload_to='post_vid/')
@@ -46,26 +47,26 @@ class Story(models.Model):
 
 
 class Comment(models.Model):
-    comment_author = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    comment_author = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
 
 
 class Like(models.Model):
-    like_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    like_by = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
 
 class SavedPost(models.Model):
-    author_of_post = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    author_of_post = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
 
 
