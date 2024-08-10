@@ -24,7 +24,7 @@ class Post(models.Model):
     author = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     caption = models.TextField()
     post_image = models.ImageField(upload_to="post_img/", null=True, blank=True)
-    video_file = models.FileField(upload_to="post_vid/")
+    video_file = models.FileField(upload_to="post_vid/", null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     post_type = models.TextField()
@@ -68,12 +68,8 @@ class Notification(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     text = models.TextField()
 
-   
 
-
-
-
-#Signals And Triggers
+# Signals And Triggers
 @receiver(post_save, sender=Notification)
 def notify_users(sender, instance, **kwargs):
     if kwargs.get("created", False):
@@ -85,6 +81,3 @@ def notify_users(sender, instance, **kwargs):
             {"type": "send_notification", "value": json.dumps(data)},
         )
         print("Notification created:", instance.text)
-
-
-
