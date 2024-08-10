@@ -210,7 +210,7 @@ class LikeViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
 
         liked_user_id = request.data.get("like_by")
-
+        liked_by_user = User.objects.get(id=liked_user_id)
         post_id = request.data.get("post")
         user_name = Post.objects.get(id = post_id).author
         # print(User.objects.get(username=user_id).id)
@@ -221,7 +221,7 @@ class LikeViewSet(viewsets.ModelViewSet):
             # Create a notification
             print("Inside", f'user_{author_user_id}', liked_user_id)
             channel_layer = get_channel_layer()
-            message = f"{request.user.username} liked your post."
+            message = f"{liked_by_user.username} liked your post."
             async_to_sync(channel_layer.group_send)(
                 f"user_{author_user_id}",
                 {
