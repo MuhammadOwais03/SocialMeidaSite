@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
@@ -13,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 
 
+from .helper import *
 from .serializers import *
 from .models import *
 
@@ -29,42 +31,49 @@ def api_root(request):
     )
 
 
-
-@api_view(['POST'])
+@api_view(["POST"])
 def user_registration(request):
     if request.user.is_authenticated:
-        return Response({"error": "User already authenticated"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "User already authenticated"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
-    username = request.data.get('username')
-    email = request.data.get('email')
-    first_name = request.data.get('first_name')
-    last_name = request.data.get('last_name')
-    password = request.data.get('password')
-    password2 = request.data.get('password2')
+    username = request.data.get("username")
+    email = request.data.get("email")
+    first_name = request.data.get("first_name")
+    last_name = request.data.get("last_name")
+    password = request.data.get("password")
+    password2 = request.data.get("password2")
 
     if password != password2:
-        return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     if User.objects.filter(username=username).exists():
-        return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     if User.objects.filter(email=email).exists():
-        return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     user = User.objects.create_user(
         username=username,
         email=email,
         first_name=first_name,
         last_name=last_name,
-        password=password
+        password=password,
     )
 
     user_profile = UserProfile(user=user)
     user_profile.save()
     serializer = UserSerializer(user)
 
-    
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 # class UserRegistrationViewSet(viewsets.ViewSet):
 #     def create(self, request, *args, **kwargs):
@@ -95,7 +104,7 @@ def user_registration(request):
 #             'refresh': tokens['refresh'],
 #             'access': tokens['access'],
 #             })
-            
+
 #             # Set the access token in an HttpOnly cookie
 #             response.set_cookie(
 #                 key='access_token',
@@ -107,36 +116,107 @@ def user_registration(request):
 #             )
 #             return response
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
- 
-@api_view(['POST'])
+
+
+@api_view(["POST"])
 def signin(request, *args, **kwargs):
     # Handle POST request only
     if request.method == "POST":
         serializer = LoginSerializer(data=request.data)
-        
+
         # Validate the serializer
         if serializer.is_valid():
             # Get validated data
             user = serializer.validated_data
             refresh = RefreshToken.for_user(user)
-            
+
             # Return tokens
-            return Response({
-                "refresh": str(refresh),
-                "access": str(refresh.access_token)
-            }, status=status.HTTP_200_OK)
-        
+            return Response(
+                {"refresh": str(refresh), "access": str(refresh.access_token)},
+                status=status.HTTP_200_OK,
+            )
+
         # If validation fails, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     # Return error if method is not POST
-    return Response({"status": "Invalid method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    return Response(
+        {"status": "Invalid method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED
+    )
+
+
+# class FriendViewSet(viewsets.ModelViewSet):
+#     queryset = Friend.objects.all()
+#     serializer_class = FriendSerializer
+
+#     # def update(self, request):
+#     #     serializers = FriendSerializer(data=request.data)
+#     #     if serializers.is_valid():
+#     #         friend_list = FriendAccepted.objects.create(friend=serializers)
+
+
+class FriendViewSet(APIView):
+
+    def get_object(self):
+
+        obj_id = self.kwargs.get("pk")  # or any other identifier
+        try:
+            return Friend.objects.get(pk=obj_id)
+        except Friend.DoesNotExist:
+            raise Http404
+
+    def get(self, request, *args, **kwargs):
+        friend_objs = Friend.objects.all()
+        serializer = FriendSerializer(friend_objs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = FriendSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        print(FriendAccepted.objects.filter(user=instance.user, of_friend=instance.friend).exists())
+        if not FriendAccepted.objects.filter(user=instance.user, of_friend=instance.friend).exists():
+            serializer = FriendSerializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                if serializer.validated_data.get("is_accepted"):
+                    FriendAccepted.objects.create(
+                        
+                        user=instance.user,
+                        of_friend=instance.friend
+                    )
+                    FriendAccepted.objects.create(
+                        
+                        user=instance.friend,
+                        of_friend=instance.user
+                    )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "Friend Exists"})
+
 
 class PostViewSet(viewsets.ModelViewSet):
 
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     http_method_names = ["get", "post", "put", "patch", "delete"]
+
+    def create(self, request, *args, **kwargs):
+
+        # print(request.data.get('id'), type(request.data.get('id')), request.data)
+        response = super().create(request, *args, **kwargs)
+
+        notification_to_all_friends(response, "post_posted")
+
+        return response
 
     # List api/post/
     # Reterive   api/post/<id>
@@ -149,38 +229,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication]
 
-
-# class LikeViewSet(viewsets.ModelViewSet):
-
-#     queryset = Like.objects.all()
-#     serializer_class = LikeSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         """
-#         User can like the post only one time if the post is already liked then user can not liked that post again
-
-#         """
-
-#         response = super().create(request, *args, **kwargs)
-#         print(request.data)
-#         print("Is")
-
-#         liked_user_id = request.data.get("like_by")
-#         print(liked_user_id)
-#         if liked_user_id:
-
-#             # Create a notification
-#             channel_layer = get_channel_layer()
-#             message = f"{request.user.username} liked your post."
-#             print(message)
-#             print("Inside View: ", f"user_{liked_user_id}")
-#             async_to_sync(channel_layer.group_send)(
-#                 f"user_{liked_user_id}",
-#                 {"type": "notification_message", "message": message},
-#             )
-
-#         return response
 
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
@@ -193,7 +243,7 @@ class LikeViewSet(viewsets.ModelViewSet):
         user = request.user
         username = "None"
         if user.is_authenticated:
-            username = user.username            
+            username = user.username
         return Response(username)
 
     def create(self, request, *args, **kwargs):
@@ -202,37 +252,51 @@ class LikeViewSet(viewsets.ModelViewSet):
         then the user cannot like that post again.
         """
         # Check if the user has already liked the post
-        # post_id = request.data.get("post_id")
-        # user_id = request.user.id
-        # if Like.objects.filter(post_id=post_id, user_id=user_id).exists():
-        #     return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+        post_id = request.data.get("post")
+        liked_user_id = request.data.get("like_by")
+        print(post_id, liked_user_id)
+        print(Like.objects.filter(post=post_id, like_by=liked_user_id))
+        if Like.objects.filter(post_id=post_id, like_by=liked_user_id).exists():
+            return Response(
+                {"detail": "You have already liked this post."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        print(self.request.data)
         response = super().create(request, *args, **kwargs)
 
-        liked_user_id = request.data.get("like_by")
         liked_by_user = User.objects.get(id=liked_user_id)
         post_id = request.data.get("post")
-        user_name = Post.objects.get(id = post_id).author
+        user_name = Post.objects.get(id=post_id).author
         # print(User.objects.get(username=user_id).id)
         # print(user_id, 'sssssssss')
         author_user_id = User.objects.get(username=user_name).id
 
-        if author_user_id:
-            # Create a notification
-            print("Inside", f'user_{author_user_id}', liked_user_id)
-            channel_layer = get_channel_layer()
-            message = f"{liked_by_user.username} liked your post."
-            async_to_sync(channel_layer.group_send)(
-                f"user_{author_user_id}",
-                {
-                    "type": "notification_message",
-                    "message": message,
-                    "sender_id":liked_user_id,
-                    "author_id":author_user_id
-                }
-            )
+        func_dict = {
+            "author_id": author_user_id,
+            "like_user": liked_by_user,
+            "post_id": post_id,
+        }
+        Type = "like_post"
 
-        return response 
+        notification_to_all_friends(func_dict, Type)
+
+        # if author_user_id:
+        #     # Create a notification
+        #     print("Inside", f"user_{author_user_id}", liked_user_id)
+        #     channel_layer = get_channel_layer()
+        #     message = f"{liked_by_user.username} liked your post."
+        #     async_to_sync(channel_layer.group_send)(
+        #         f"user_{author_user_id}",
+        #         {
+        #             "type": "notification_message",
+        #             "message": message,
+        #             "sender_id": liked_user_id,
+        #             "author_id": author_user_id,
+        #         },
+        #     )
+
+        return response
 
 
 class SavedPostViewSet(viewsets.ModelViewSet):
@@ -245,20 +309,17 @@ class SavedPostViewSet(viewsets.ModelViewSet):
 
     queryset = SavedPost.objects.all()
     serializer_class = SavedPostSerializer
-
-
-from rest_framework.permissions import IsAuthenticated
 
 
 class MyProtectedView(APIView):
     # permission_classes = [IsAuthenticated]
-     
+
     def get(self, request, *args, **kwargs):
         print(request.user)
         user = request.user
         username = "None"
         if user.is_authenticated:
-            username = user.username 
+            username = user.username
             user_ = User.objects.get(username=username)
-            print(user_.id)           
+            print(user_.id)
         return Response(username)

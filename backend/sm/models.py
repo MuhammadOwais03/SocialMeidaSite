@@ -20,6 +20,40 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_loggedIn = models.BooleanField(default=False, null=True, blank=True)
 
+    def __str__(self):
+        return self.user
+
+
+class Friend(models.Model):
+    user = models.ForeignKey(
+        User, related_name="friend_requests", on_delete=models.CASCADE
+    )
+    friend = models.ForeignKey(
+        User, related_name="received_requests", on_delete=models.CASCADE
+    )
+    is_accepted = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    is_pending = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}_{self.user.id} is a friend request to {self.friend.username}_{self.friend.id}"
+
+
+class FriendAccepted(models.Model):
+    
+    user = models.ForeignKey(
+        User, related_name="user", on_delete=models.CASCADE
+    )
+    of_friend = models.ForeignKey(
+        User, related_name="his_friend", on_delete=models.CASCADE
+    )
+    accepted_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+
+    def __str__(self):
+        return f"{self.user.username}_{self.user.id} is a friend of {self.of_friend.username}_{self.of_friend.id}"
+
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -30,10 +64,16 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     post_type = models.TextField()
 
+    def __str__(self):
+        return f"{self.author}" + "Post"
+
 
 class Gallery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user}" + "Gallery"
 
 
 class Story(models.Model):
@@ -48,9 +88,18 @@ class Story(models.Model):
 
 class Comment(models.Model):
     comment_author = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey("Post", on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+    )
+
+    def __str__(self):
+        return f"Comment by {self.comment_author} on {self.post}"
+
+    def get_replies(self):
+        return self.replies.all()
 
 
 class Like(models.Model):
@@ -58,27 +107,66 @@ class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return f"like on the post '{self.post}' by {self.like_by}"
+
 
 class SavedPost(models.Model):
     author_of_post = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 
+    def __str__(self) -> str:
+        return f"{self.author_of_post} + {self.post}"
+
+
 
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField()
+    is_seen = models.BooleanField()
+
+class NotificationPostPosted(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    message = models.TextField()
+
+class NotificationLikePost(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    like = models.ForeignKey(Like, on_delete=models.CASCADE)
+    message = models.TextField()
+
+class NotificationCommentPost(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    like = models.ForeignKey(Like, on_delete=models.CASCADE)
+    message = models.TextField()
+
+class FriendsNotification(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    friend = models.ForeignKey(Friend, on_delete=models.CASCADE)
+    message = models.TextField()
+
+class NotificationFriendAccepted(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    friend_accepted = models.ForeignKey(FriendAccepted, on_delete=models.CASCADE)
+    message = models.TextField()
+
+
+#broadcast to friend Post Posted Done\/
+#broadcast to friend Like Posted Done \/
+#One to One to comment on Posted
+#One to two to comment on comment
+#One to two to friend request/accepted and rejected
 
 
 # Signals And Triggers
-@receiver(post_save, sender=Notification)
-def notify_users(sender, instance, **kwargs):
-    if kwargs.get("created", False):
-        channel_layer = get_channel_layer()
-        print("Channel layer attributes:", dir(channel_layer))
-        data = {"notification": {"message": instance.text, "id": instance.id}}
-        async_to_sync(channel_layer.group_send)(
-            "notification_group",
-            {"type": "send_notification", "value": json.dumps(data)},
-        )
-        print("Notification created:", instance.text)
+# @receiver(post_save, sender=Notification)
+# def notify_users(sender, instance, **kwargs):
+#     if kwargs.get("created", False):
+#         channel_layer = get_channel_layer()
+#         print("Channel layer attributes:", dir(channel_layer))
+#         data = {"notification": {"message": instance.text, "id": instance.id}}
+#         async_to_sync(channel_layer.group_send)(
+#             "notification_group",
+#             {"type": "send_notification", "value": json.dumps(data)},
+#         )
+#         print("Notification created:", instance.text)
