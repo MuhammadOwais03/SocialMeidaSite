@@ -41,15 +41,12 @@ class Friend(models.Model):
 
 
 class FriendAccepted(models.Model):
-    
-    user = models.ForeignKey(
-        User, related_name="user", on_delete=models.CASCADE
-    )
+
+    user = models.ForeignKey(User, related_name="user", on_delete=models.CASCADE)
     of_friend = models.ForeignKey(
         User, related_name="his_friend", on_delete=models.CASCADE
     )
     accepted_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-
 
     def __str__(self):
         return f"{self.user.username}_{self.user.id} is a friend of {self.of_friend.username}_{self.of_friend.id}"
@@ -120,30 +117,34 @@ class SavedPost(models.Model):
         return f"{self.author_of_post} + {self.post}"
 
 
-
 class Notification(models.Model):
     is_seen = models.BooleanField()
+
 
 class NotificationPostPosted(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     message = models.TextField()
 
+
 class NotificationLikePost(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     like = models.ForeignKey(Like, on_delete=models.CASCADE)
     message = models.TextField()
 
+
 class NotificationCommentPost(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    like = models.ForeignKey(Like, on_delete=models.CASCADE)
+    comment_by = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
+
 
 class FriendsNotification(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     friend = models.ForeignKey(Friend, on_delete=models.CASCADE)
     message = models.TextField()
+
 
 class NotificationFriendAccepted(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
@@ -151,11 +152,11 @@ class NotificationFriendAccepted(models.Model):
     message = models.TextField()
 
 
-#broadcast to friend Post Posted Done\/
-#broadcast to friend Like Posted Done \/
-#One to One to comment on Posted
-#One to two to comment on comment
-#One to two to friend request/accepted and rejected
+# broadcast to friend Post Posted Done\/
+# broadcast to friend Like Posted Done \/
+# One to One to comment on Posted Done
+# One to two to comment on comment Done
+# One to two to friend request/accepted and rejected
 
 
 # Signals And Triggers

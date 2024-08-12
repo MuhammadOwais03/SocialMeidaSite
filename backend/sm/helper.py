@@ -25,6 +25,13 @@ def mutual_friends(user1_id, user2_id):
     return mutual_friends
 
 
+def user_that_likes_the_post(post):
+    all_likes_post = Like.objects.filter(post=post).values_list('like_by_id', flat=True)
+    users = User.objects.filter(id__in=all_likes_post)
+    return users
+
+
+
 
 def notification_to_all_friends(request, Type):
 
@@ -64,10 +71,54 @@ def notification_to_all_friends(request, Type):
             message=message
         )
 
-        print("after",notification_like.like)
-        friends = mutual_friends(user_id, like_user)
-        print(friends)
         
+        friends = mutual_friends(user_id, like_user)
+
+    elif Type == "comment_post":
+        post = request.get('post')
+        comment_author = request.get('comment_author')
+        post_author = request.get('post_author')
+        users = user_that_likes_the_post(post)
+
+        friends = users | post_author
+        
+        for friend in friends:
+
+            message = f"{comment_author.username} comment on {post_author[0].username} post"
+            if friend.id == post.author[0].id:
+                message = f"{comment_author.username} comment on your post"
+        
+        notification = Notification.objects.create(is_seen=False)
+        notification_comment = NotificationCommentPost(
+            notification=notification,
+            comment=request.get('comment'),
+            comment_by=comment_author,
+            message=message
+        )
+
+    elif Type == "reply_on_comment":
+        parent_comment = request.get('parent_comment')
+        comment_author = request.get('comment_author')
+        parent_comment_author = request.get('parent_comment_author')
+        post = request.get('post')
+        post_author = request.get('post_author')
+        users = user_that_likes_the_post(post)
+
+        friends = users | parent_comment_author
+
+        for friend in friends:
+            message = f"{comment_author.username} reply on the comment by {parent_comment_author[0].username} on the post of {post_author[0].username}"
+
+            if friend.id == parent_comment_author[0].id:
+                message = f"{comment_author.username} reply to your comment on the post of {post_author[0].username}"
+
+        notification = Notification.objects.create(is_seen=False)
+        notification_comment = NotificationCommentPost(
+            notification=notification,
+            comment=request.get('comment'),
+            comment_by=comment_author,
+            message=message
+        )
  
     if friends.exists():
         

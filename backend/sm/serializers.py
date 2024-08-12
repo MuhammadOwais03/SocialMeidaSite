@@ -5,6 +5,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from .models import *
+from .helper import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -96,6 +97,27 @@ class CommentSerializer(serializers.ModelSerializer):
         )
 
         comment.save()
+
+        post = Post.objects.get(id=validated_data['post'])
+        post_author = User.objects.filter(id=post.author)
+        comment_author = User.objects.get(id=validated_data['comment_author'])
+
+
+
+        notify_dict = {"post_author":post_author, "comment_author":comment_author, "comment":comment, "post":post}
+
+        if parent is None:
+            Type = "comment_post"
+            notification_to_all_friends(notify_dict, Type)
+        else:
+            parent_comment = Comment.objects.get(id=parent)
+            parent_comment_author = User.objects.filter(id=parent_comment.comment_author)
+            notify_dict['parent_comment'] = parent_comment
+            notify_dict['parent_comment_author'] = parent_comment_author
+
+            Type = "reply_on_comment"
+
+            notification_to_all_friends(notify_dict, Type)
 
         return comment
 

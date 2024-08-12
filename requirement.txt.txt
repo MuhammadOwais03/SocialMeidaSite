@@ -3,3 +3,4 @@ django-rest-framwork
 channels
 channels-redis
 redis
+djangorestframework-simplejwt
