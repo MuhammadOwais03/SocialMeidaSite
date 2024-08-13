@@ -2,6 +2,7 @@
 import './App.css';
 import Auth  from './auth.js'
 import Sidebar  from './Sidebar.js'
+import Home from './Home.js'
 
 function App() {
 
@@ -11,6 +12,8 @@ function App() {
     <div className="App">
       {/* <Auth  /> */}
       <Sidebar />
+      <Home />
+
     </div>
   );
 }
