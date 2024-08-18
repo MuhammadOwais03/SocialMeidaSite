@@ -174,10 +174,10 @@ const Home = () => {
                                 <p><strong>galaxies: </strong>
                                     {readMore ? caption : `${caption.slice(0, 100)}...`}
                                     {!readMore && (
-                                        <a href="#" onClick={(e) => {
+                                        <button onClick={(e) => {
                                             e.preventDefault();
                                             setReadMore(true);
-                                        }}>more</a>
+                                        }}>more</button>
                                     )}
                                 </p>
                             </div>
@@ -223,10 +223,10 @@ const Home = () => {
                                 <p><strong>galaxies: </strong>
                                     {readMore ? caption : `${caption.slice(0, 100)}...`}
                                     {!readMore && (
-                                        <a href="#" onClick={(e) => {
+                                        <button onClick={(e) => {
                                             e.preventDefault();
                                             setReadMore(true);
-                                        }}>more</a>
+                                        }}>more</button>
                                     )}
                                 </p>
                             </div>
@@ -272,10 +272,10 @@ const Home = () => {
                                 <p><strong>galaxies: </strong>
                                     {readMore ? caption : `${caption.slice(0, 100)}...`}
                                     {!readMore && (
-                                        <a href="#" onClick={(e) => {
+                                        <button onClick={(e) => {
                                             e.preventDefault();
                                             setReadMore(true);
-                                        }}>more</a>
+                                        }}>more</button>
                                     )}
                                 </p>
                             </div>

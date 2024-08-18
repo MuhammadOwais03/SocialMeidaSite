@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import './Sidebar.css';
 // import LoadingSpinner from './LoadingSpinner';
 
@@ -20,7 +20,7 @@ const Sidebar = () => {
   const [moreContent, setMoreContent] = useState("more-not-active")
 
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
+  // const [data, setData] = useState(null);
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);

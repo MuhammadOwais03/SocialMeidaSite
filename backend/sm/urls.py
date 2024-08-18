@@ -3,6 +3,10 @@ from django.urls import path
 
 from rest_framework import routers
 from .views import *
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 router = routers.SimpleRouter()
 router.register(r'post', PostViewSet)
@@ -21,6 +25,7 @@ urlpatterns = [
     path('protected/', MyProtectedView.as_view(), name='protected'),
     path('friend/', FriendViewSet.as_view(), name='friend'),
     path('friend/<int:pk>', FriendViewSet.as_view(), name='friend'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
 ]
 

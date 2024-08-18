@@ -37,7 +37,7 @@ def user_registration(request):
         return Response(
             {"error": "User already authenticated"}, status=status.HTTP_400_BAD_REQUEST
         )
-
+    print(request.data)   
     username = request.data.get("username")
     email = request.data.get("email")
     first_name = request.data.get("first_name")
