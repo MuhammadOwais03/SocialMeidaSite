@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { checking_token, checkingTokenExpired, allPosts, getUserInfo } from './server-requests';
 import './App.css';
 
 import Auth from './auth.js';
@@ -10,17 +11,55 @@ import NotificationTicker from './NotificationTicker.js';
 function App() {
   const location = useLocation();
   const hideSidebar = location.pathname === '/auth'; // Hide Sidebar on the Auth page
-
+  const [posts, setPosts] = useState([]);
+  const [authorizedUser, setAuthorizedUser] = useState({})
+  // const [isLoading, setIsLoading] = useState(false);
   const [tickerActive, setTickerActive] = useState('ticker-not-active')
 
+    const checkAuthAndFetchPosts = async () => {
+      try {
+          let token_check = checking_token();
 
-  // console.log(showReplies)
+          if (token_check) {
+              const status_code = await checkingTokenExpired();
+              if (status_code === 401) {
+                  window.location.href = '/auth';
+                  return;
+              }
+
+              const data = await allPosts();
+              setPosts(data);
+              // setIsLoading(true)
+          } else {
+              window.location.href = '/auth';
+          }
+      } catch (error) {
+          console.error("Error checking token status:", error);
+      } finally {
+          // setIsLoading(false);
+      }
+  };
+
+  useEffect(()=>{
+    
+
+    async function getUser() {
+      let data = await getUserInfo();
+      setAuthorizedUser(data)
+    }
+
+    getUser()
+
+  }, [])
+
+
+  console.log(location.pathname, authorizedUser )
 
   return (
     <div className="App">
-      {!hideSidebar && <Sidebar />} {/* Render Sidebar only if not on the Auth page */}
+      {!hideSidebar && <Sidebar authorizedUser={authorizedUser} />} {/* Render Sidebar only if not on the Auth page */}
       <Routes>
-        <Route path="/" element={<Home setTickerActive={setTickerActive} />} />
+        <Route path="/" element={<Home setTickerActive={setTickerActive} posts={posts} setPosts={setPosts}  checkAuthAndFetchPosts={checkAuthAndFetchPosts} />} />
         <Route path="/auth" element={<Auth setTickerActive={setTickerActive}/>} />
         {/* Add more routes as needed */}
       </Routes>

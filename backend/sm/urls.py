@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 )
 
 router = routers.SimpleRouter()
+router.register(r'user-info', UserModelViewSet)
 router.register(r'post', PostViewSet)
 router.register(r'comment', CommentViewSet, basename='comment')
 router.register(r'like', LikeViewSet, basename='like')
@@ -26,6 +27,7 @@ urlpatterns = [
     path('friend/', FriendViewSet.as_view(), name='friend'),
     path('friend/<int:pk>', FriendViewSet.as_view(), name='friend'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('authenticated-user-info/', AuthenticatedUserViewSet.as_view(), name='get-user-info'),
     
 ]
 

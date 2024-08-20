@@ -25,6 +25,10 @@
     position: relative;
 }
 
+.post p{
+    cursor:default;
+}
+
 .post-header {
     display: flex;
     flex-direction: row;
@@ -41,8 +45,18 @@
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    align-items: center;
+    align-items:baseline;
 }
+
+.post-header-content h4 {
+    cursor: pointer;
+    transition: all 0.5s ease;
+}
+
+.post-header-content h4:hover {
+    scale: 1.1;
+}
+
 
 
 .post-main {
@@ -52,6 +66,10 @@
 .post-main video {
     width: 100%;
     object-fit: contain;
+}
+.post-main img {
+    width: 100%;
+    /* object-fit: contain; */
 }
 
 .post-footer {

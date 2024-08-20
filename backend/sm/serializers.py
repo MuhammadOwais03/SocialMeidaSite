@@ -22,10 +22,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = [
-            "bio",
-            "user"
-        ]
+        fields ="__all__"
 
 
 from django.contrib.auth import authenticate
@@ -62,19 +59,6 @@ class FriendSerializer(serializers.ModelSerializer):
 
         return attrs
         
-
-    
-
-
-class PostSerializer(serializers.ModelSerializer):
-
-    # author = UserSerializer()
- 
-    class Meta:
-        model = Post
-        fields = "__all__"
-
-
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -128,6 +112,27 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = "__all__"
+
+    
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+    comment_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = "__all__"
+
+    def get_comment_count(self, obj):
+        return Comment.objects.filter(post=obj).count()
+    
+    def get_likes_count(self, obj):
+        return Like.objects.filter(post=obj).count()
+
+
+
 
 
 class SavedPostSerializer(serializers.ModelSerializer):

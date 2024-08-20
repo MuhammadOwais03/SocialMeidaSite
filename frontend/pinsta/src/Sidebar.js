@@ -8,7 +8,9 @@ import './Sidebar.css';
 
 
 
-const Sidebar = () => {
+const Sidebar = ({
+  authorizedUser
+}) => {
   const [homeLogo, setHomeLogo] = useState(""); 
   const [searchLogo, setSearchLogo] = useState(""); 
   const [msgLogo, setMsgLogo] = useState(""); 
@@ -125,6 +127,9 @@ const handleSearch = () => {
             }
         }
     }
+    const hasUserData = authorizedUser && authorizedUser.user;
+
+    // console.log(authorizedUser.user.username)
 
   return (
     <>
@@ -174,8 +179,23 @@ const handleSearch = () => {
             <h3>Notificatons</h3>
           </div>
           <div className="profile_side side">
-            <box-icon name="user-circle" type="solid"></box-icon>
-            <h3>Profile</h3>
+
+          {hasUserData ? (
+            <>
+              <img 
+                src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${authorizedUser.profile_picture}` : 'default_profile_picture_url'} 
+                alt="Profile Picture" 
+              />
+              <h3>{authorizedUser.user.username}</h3>
+            </>
+          ) : (
+            <>
+              <box-icon name="user-circle" type="solid"></box-icon>
+              <h3>Profile</h3>
+            </>
+          )}
+
+            
           </div>
           
         </div>

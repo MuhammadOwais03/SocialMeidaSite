@@ -10,6 +10,8 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 
@@ -155,7 +157,30 @@ def signin(request, *args, **kwargs):
 #     #         friend_list = FriendAccepted.objects.create(friend=serializers)
 
 
+
+class UserModelViewSet(viewsets.ModelViewSet):
+    queryset = UserProfile.objects.all()   
+    serializer_class = UserProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class AuthenticatedUserViewSet(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile_serializer = UserProfileSerializer(user_profile)
+        user_serializer = UserSerializer(user)
+
+        print(user_profile_serializer.data)
+        return Response(user_profile_serializer.data)
+
 class FriendViewSet(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
 
@@ -208,6 +233,8 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     http_method_names = ["get", "post", "put", "patch", "delete"]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
 
@@ -229,14 +256,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
 
 
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
-    authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         print(request.user)
@@ -301,21 +328,28 @@ class LikeViewSet(viewsets.ModelViewSet):
 
 class SavedPostViewSet(viewsets.ModelViewSet):
 
+    
     queryset = SavedPost.objects.all()
     serializer_class = SavedPostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 
 class SavedPostViewSet(viewsets.ModelViewSet):
 
+    
     queryset = SavedPost.objects.all()
     serializer_class = SavedPostSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 
 class MyProtectedView(APIView):
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        print(request.user)
+        print(request.headers, '329')
         user = request.user
         username = "None"
         if user.is_authenticated:

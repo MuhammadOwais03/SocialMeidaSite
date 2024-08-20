@@ -22,8 +22,9 @@ const LoginAuth = ({
       console.log(res)
 
       if (res) {
-        console.log("successfull")
+        // console.log("successfull")
         console.log(get_token('accessToken'))
+        window.location.href = '/'
 
       }
 

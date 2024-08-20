@@ -57,7 +57,14 @@
     padding: 1rem;
     transition: all 1s ease;
     cursor: pointer;
+    align-items: center;
 
+}
+
+.profile_side img {
+    width: 50px;
+    height: 55px;
+    border-radius: 50%;
 }
 
 
