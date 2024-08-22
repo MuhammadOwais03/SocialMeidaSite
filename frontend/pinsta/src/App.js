@@ -42,6 +42,7 @@ function App() {
 
   useEffect(()=>{
     
+    
 
     async function getUser() {
       let data = await getUserInfo();
@@ -53,21 +54,21 @@ function App() {
   }, [])
 
 
-  console.log(location.pathname, authorizedUser )
+  // console.log(location.pathname, authorizedUser )
 
   return (
     <div className="App">
       {!hideSidebar && <Sidebar authorizedUser={authorizedUser} />} {/* Render Sidebar only if not on the Auth page */}
       <Routes>
-        <Route path="/" element={<Home setTickerActive={setTickerActive} posts={posts} setPosts={setPosts}  checkAuthAndFetchPosts={checkAuthAndFetchPosts} />} />
+        <Route path="/" element={<Home setTickerActive={setTickerActive} posts={posts} setPosts={setPosts}  checkAuthAndFetchPosts={checkAuthAndFetchPosts} authorizedUser={authorizedUser} />} />
         <Route path="/auth" element={<Auth setTickerActive={setTickerActive}/>} />
         {/* Add more routes as needed */}
       </Routes>
 
-      <NotificationTicker 
+      {/* <NotificationTicker 
         tickerActive={tickerActive}
         setTickerActive={setTickerActive}
-      />
+      /> */}
       
 
 

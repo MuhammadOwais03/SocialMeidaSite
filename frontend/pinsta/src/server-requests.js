@@ -1,5 +1,8 @@
 
 
+
+
+
 export function checking_token() {
     let token = localStorage.getItem('accessToken')
     if (token) return true
@@ -28,7 +31,7 @@ export async function getUserInfo() {
                 }
             });
             const data = await response.json();
-            console.log('Logged in user:', data);
+            // console.log('Logged in user:', data);
             return data;
         } catch (error) {
             console.error('Error fetching user info:', error);
@@ -155,4 +158,57 @@ export async function allPosts() {
     let responseData = await response.json()
     return responseData
     
+}
+
+export async function LikePostRequest(post,likeType, authUserId) {
+    
+    console.log(likeType)
+    if (likeType === "+") {
+
+
+            const response = await fetch('http://127.0.0.1:8000/api/like/', {
+                method:"POST",
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${get_token('accessToken')}` 
+                },
+                body: JSON.stringify({
+                    'like_by':authUserId,
+                    "post":post
+                })
+            })
+
+            if (!response.ok) {
+                return 'Network not Ok'
+            }
+
+            const result = await response.json()
+            console.log(result)
+            return result
+    }
+
+    else if (likeType==='-') {
+        const response = await fetch('http://127.0.0.1:8000/api/unlike-post/', {
+            method:"DELETE",
+            headers:{
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}` 
+            },
+            body: JSON.stringify({
+                'like_by':authUserId,
+                "post":post
+            })
+        })
+
+        if (!response.ok) {
+            return 'Network not Ok'
+        }
+
+        const result = await response.json()
+        console.log(result)
+        return result
+    }
+
+
+
 }

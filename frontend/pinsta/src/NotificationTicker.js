@@ -8,7 +8,6 @@ const NotificationTicker = ({
 
     useEffect(()=>{
         const timeoutId = setTimeout(() => {
-            console.log('waiting for 4 seconds');
             setTickerActive('ticker-not-active');
         
           }, 6000);
