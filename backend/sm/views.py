@@ -4,7 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    authentication_classes,
+)
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -39,7 +43,7 @@ def user_registration(request):
         return Response(
             {"error": "User already authenticated"}, status=status.HTTP_400_BAD_REQUEST
         )
-    print(request.data)   
+    print(request.data)
     username = request.data.get("username")
     email = request.data.get("email")
     first_name = request.data.get("first_name")
@@ -157,12 +161,12 @@ def signin(request, *args, **kwargs):
 #     #         friend_list = FriendAccepted.objects.create(friend=serializers)
 
 
-
 class UserModelViewSet(viewsets.ModelViewSet):
-    queryset = UserProfile.objects.all()   
+    queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 class AuthenticatedUserViewSet(APIView):
     permission_classes = [IsAuthenticated]
@@ -170,13 +174,14 @@ class AuthenticatedUserViewSet(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        
+
         user_profile = UserProfile.objects.get(user=user)
         user_profile_serializer = UserProfileSerializer(user_profile)
         user_serializer = UserSerializer(user)
 
         print(user_profile_serializer.data)
         return Response(user_profile_serializer.data)
+
 
 class FriendViewSet(APIView):
     authentication_classes = [JWTAuthentication]
@@ -199,28 +204,30 @@ class FriendViewSet(APIView):
 
         serializer = FriendSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save() 
+            serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
 
         instance = self.get_object()
-        print(FriendAccepted.objects.filter(user=instance.user, of_friend=instance.friend).exists())
-        if not FriendAccepted.objects.filter(user=instance.user, of_friend=instance.friend).exists():
+        print(
+            FriendAccepted.objects.filter(
+                user=instance.user, of_friend=instance.friend
+            ).exists()
+        )
+        if not FriendAccepted.objects.filter(
+            user=instance.user, of_friend=instance.friend
+        ).exists():
             serializer = FriendSerializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 if serializer.validated_data.get("is_accepted"):
                     FriendAccepted.objects.create(
-                        
-                        user=instance.user,
-                        of_friend=instance.friend
+                        user=instance.user, of_friend=instance.friend
                     )
                     FriendAccepted.objects.create(
-                        
-                        user=instance.friend,
-                        of_friend=instance.user
+                        user=instance.friend, of_friend=instance.user
                     )
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -230,11 +237,23 @@ class FriendViewSet(APIView):
 
 class PostViewSet(viewsets.ModelViewSet):
 
-    queryset = Post.objects.all()
+    # queryset = Post.objects.all()
     serializer_class = PostSerializer
     http_method_names = ["get", "post", "put", "patch", "delete"]
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Get friends of the authenticated user
+        friends = FriendAccepted.objects.filter(user=user).values_list('of_friend', flat=True)
+        
+        # Retrieve posts authored by friends or the authenticated user
+        queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user))
+        
+        # Sort posts by created_at in descending order (most recent first)
+        return queryset
 
     def create(self, request, *args, **kwargs):
 
@@ -306,29 +325,47 @@ class LikeViewSet(viewsets.ModelViewSet):
         }
         Type = "like_post"
 
-        notification_to_all_friends(func_dict, Type)
+        print(func_dict)
 
-        # if author_user_id:
-        #     # Create a notification
-        #     print("Inside", f"user_{author_user_id}", liked_user_id)
-        #     channel_layer = get_channel_layer()
-        #     message = f"{liked_by_user.username} liked your post."
-        #     async_to_sync(channel_layer.group_send)(
-        #         f"user_{author_user_id}",
-        #         {
-        #             "type": "notification_message",
-        #             "message": message,
-        #             "sender_id": liked_user_id,
-        #             "author_id": author_user_id,
-        #         },
-        #     )
+        like_notification_to_all_friend(func_dict, Type)
 
         return response
 
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def unlike_post(request, *args, **kwargs):
+    data = request.data
+    like_by = data.get("like_by")
+    post = data.get("post")
+
+    post_author = Post.objects.get(id=post).author
+    user_id = User.objects.get(username=post_author).id
+
+    if not like_by or not post:
+        return Response({"error": "like_by and post fields are required"}, status=400)
+
+    like = Like.objects.filter(like_by=like_by, post=post).first()
+
+    func_dict = {
+            "author_id": user_id,
+            "like_user": like_by,
+            "post_id": post,
+    }
+
+    print(func_dict)
+
+    if like:
+        like_notification_to_all_friend(func_dict, 'dislike_post')
+        like.delete()
+        return Response({"success": "Unlike the post successfully"}, status=200)
+    else:
+        return Response({"error": "Like not found"}, status=404)
+
+
 class SavedPostViewSet(viewsets.ModelViewSet):
 
-    
     queryset = SavedPost.objects.all()
     serializer_class = SavedPostSerializer
     authentication_classes = [JWTAuthentication]
@@ -337,7 +374,6 @@ class SavedPostViewSet(viewsets.ModelViewSet):
 
 class SavedPostViewSet(viewsets.ModelViewSet):
 
-    
     queryset = SavedPost.objects.all()
     serializer_class = SavedPostSerializer
     authentication_classes = [JWTAuthentication]
@@ -349,7 +385,7 @@ class MyProtectedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        print(request.headers, '329')
+        print(request.headers, "329")
         user = request.user
         username = "None"
         if user.is_authenticated:

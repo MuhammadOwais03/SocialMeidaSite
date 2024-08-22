@@ -8,6 +8,9 @@ from .models import *
 from .helper import *
 
 
+
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -120,6 +123,8 @@ class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer()
     comment_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
+    like_obj = serializers.SerializerMethodField()
+    # like_by_auth_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -128,8 +133,13 @@ class PostSerializer(serializers.ModelSerializer):
     def get_comment_count(self, obj):
         return Comment.objects.filter(post=obj).count()
     
-    def get_likes_count(self, obj):
+    def get_likes_count(self, obj):  
+        
         return Like.objects.filter(post=obj).count()
+    def get_like_obj(self, obj):
+        likes = Like.objects.filter(post=obj)
+        return LikeSerializer(likes, many=True).data
+    
 
 
 

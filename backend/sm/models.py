@@ -6,7 +6,8 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 # Create your models here.
 
@@ -118,38 +119,17 @@ class SavedPost(models.Model):
 
 
 class Notification(models.Model):
-    is_seen = models.BooleanField()
-
-
-class NotificationPostPosted(models.Model):
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    by_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_seen = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
     message = models.TextField()
 
-
-class NotificationLikePost(models.Model):
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    like = models.ForeignKey(Like, on_delete=models.CASCADE)
-    message = models.TextField()
-
-
-class NotificationCommentPost(models.Model):
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    comment_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
-
-
-class FriendsNotification(models.Model):
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    friend = models.ForeignKey(Friend, on_delete=models.CASCADE)
-    message = models.TextField()
-
-
-class NotificationFriendAccepted(models.Model):
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    friend_accepted = models.ForeignKey(FriendAccepted, on_delete=models.CASCADE)
-    message = models.TextField()
+    def __str__(self):
+        return f"Notification for {self.to_user.username}: {self.message}"
 
 
 # broadcast to friend Post Posted Done\/
