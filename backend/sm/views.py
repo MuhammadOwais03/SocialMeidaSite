@@ -277,6 +277,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     authentication_classes = [JWTAuthentication]
 
+    def list(self, request):
+        
+        post_id = request.query_params.get('post', None)
+        if post_id is not None:
+            comments = Comment.objects.filter(post_id=post_id)
+        else:
+            comments = Comment.objects.all()
+
+        
+        serializer = self.get_serializer(comments, many=True)
+        
+        
+        return Response(serializer.data)
 
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()

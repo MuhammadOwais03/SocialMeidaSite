@@ -64,50 +64,23 @@ class FriendSerializer(serializers.ModelSerializer):
         
 class CommentSerializer(serializers.ModelSerializer):
 
+    user_profile = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
         fields = "__all__"
 
-    def create(self, validated_data):
-        parent = validated_data.get("parent", None)
-        print(parent.id)
-        if parent:
-            if parent.post != validated_data["post"]:
-                raise serializers.ValidationError(
-                    "Parent comment must belong to the same post."
-                )
+    def get_user_profile(self, obj):
+        user = User.objects.get(username=obj.comment_author)
+        user_profile = UserProfile.objects.get(user=user)
+        print(user_profile.id, user.id)
 
-        comment = Comment(
-            comment_author=validated_data["comment_author"],
-            post=validated_data["post"],
-            content=validated_data["content"],
-            parent=parent,
-        )
-
-        comment.save()
-
-        post = Post.objects.get(id=validated_data['post'])
-        post_author = User.objects.filter(id=post.author)
-        comment_author = User.objects.get(id=validated_data['comment_author'])
+        serializer = UserProfileSerializer(user_profile)
+        
+        return serializer.data
 
 
-
-        notify_dict = {"post_author":post_author, "comment_author":comment_author, "comment":comment, "post":post}
-
-        if parent is None:
-            Type = "comment_post"
-            notification_to_all_friends(notify_dict, Type)
-        else:
-            parent_comment = Comment.objects.get(id=parent)
-            parent_comment_author = User.objects.filter(id=parent_comment.comment_author)
-            notify_dict['parent_comment'] = parent_comment
-            notify_dict['parent_comment_author'] = parent_comment_author
-
-            Type = "reply_on_comment"
-
-            notification_to_all_friends(notify_dict, Type)
-
-        return comment
+    
 
 
 class LikeSerializer(serializers.ModelSerializer):

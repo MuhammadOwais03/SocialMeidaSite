@@ -92,7 +92,7 @@ def like_notification_to_all_friend(request, Type):
                         f"{group_name}",
                         {
                             "type": "like_notification_message",
-                            "category": "dislike",
+                            "category": "like_post",
                             "message": message,
                             "sender_id": user_id,
                             "author_id": friend_id,
@@ -113,7 +113,9 @@ def like_notification_to_all_friend(request, Type):
         friends = list(friends)  # Convert to list
         friends.append(user_id)
         post = Post.objects.get(id=post_id)
-        dislike_user = User.objects.get(username=Like.objects.get(like_by=like_user, post=post).like_by)
+        dislike_user = User.objects.get(
+            username=Like.objects.get(like_by=like_user, post=post).like_by
+        )
         like_count = Like.objects.filter(post=post).count()
         if friends:
 
@@ -128,7 +130,7 @@ def like_notification_to_all_friend(request, Type):
                         content_type=ContentType.objects.get_for_model(post),
                     )
                     if notification.exists():
-                         notification[0].delete()
+                        notification[0].delete()
                     notification_count = Notification.objects.filter(
                         to_user=user_obj, is_seen=False
                     ).count()
@@ -144,7 +146,7 @@ def like_notification_to_all_friend(request, Type):
                             "sender_id": user_id,
                             "author_id": friend_id,
                             "notification_count": notification_count,
-                            "like_count": like_count-1,
+                            "like_count": like_count - 1,
                             "post_id": post_id,
                         },
                     )

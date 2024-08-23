@@ -184,8 +184,8 @@ class LikeNotification(AsyncWebsocketConsumer):
     async def like_notification_message(self, event):
 
         category = event["category"]
-        if category.lower() == 'dislike':
-            
+        if category.lower() == "dislike":
+
             sender_id = event["sender_id"]
             author_id = event["author_id"]
             notification_count = event["notification_count"]
@@ -193,19 +193,16 @@ class LikeNotification(AsyncWebsocketConsumer):
             post_id = event["post_id"]
 
             await self.send(
-            text_data=json.dumps(
-                {
-                    "sender_id": sender_id,
-                   
-                    "author_id": author_id,
-                    "notification_count": notification_count,
-                    "like_count": like_count,
-                    "post_id": post_id
-                    
-                }
+                text_data=json.dumps(
+                    {
+                        "sender_id": sender_id,
+                        "author_id": author_id,
+                        "notification_count": notification_count,
+                        "like_count": like_count,
+                        "post_id": post_id,
+                    }
+                )
             )
-        )
-             
 
         message = event["message"]
         sender_id = event["sender_id"]
@@ -213,9 +210,7 @@ class LikeNotification(AsyncWebsocketConsumer):
         notification_count = event["notification_count"]
         like_count = event["like_count"]
         post_id = event["post_id"]
-        
-
-        
+        category = event["category"]
 
         # Send message to WebSocket
         await self.send(
@@ -227,6 +222,7 @@ class LikeNotification(AsyncWebsocketConsumer):
                     "notification_count": notification_count,
                     "like_count": like_count,
                     "post_id": post_id,
+                    "category": category,
                 }
             )
         )
