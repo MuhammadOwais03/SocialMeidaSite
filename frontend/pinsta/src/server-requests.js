@@ -144,10 +144,10 @@ export async function loginAuth(username, password) {
 export async function allPosts() {
 
     const response = await fetch('http://127.0.0.1:8000/api/post/', {
-        method: 'GET',  
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${get_token('accessToken')}` 
+            'Authorization': `Bearer ${get_token('accessToken')}`
         }
     })
 
@@ -157,46 +157,24 @@ export async function allPosts() {
 
     let responseData = await response.json()
     return responseData
-    
+
 }
 
-export async function LikePostRequest(post,likeType, authUserId) {
-    
+export async function LikePostRequest(post, likeType, authUserId) {
+
     console.log(likeType)
     if (likeType === "+") {
 
 
-            const response = await fetch('http://127.0.0.1:8000/api/like/', {
-                method:"POST",
-                headers:{
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${get_token('accessToken')}` 
-                },
-                body: JSON.stringify({
-                    'like_by':authUserId,
-                    "post":post
-                })
-            })
-
-            if (!response.ok) {
-                return 'Network not Ok'
-            }
-
-            const result = await response.json()
-            console.log(result)
-            return result
-    }
-
-    else if (likeType==='-') {
-        const response = await fetch('http://127.0.0.1:8000/api/unlike-post/', {
-            method:"DELETE",
-            headers:{
+        const response = await fetch('http://127.0.0.1:8000/api/like/', {
+            method: "POST",
+            headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${get_token('accessToken')}` 
+                'Authorization': `Bearer ${get_token('accessToken')}`
             },
             body: JSON.stringify({
-                'like_by':authUserId,
-                "post":post
+                'like_by': authUserId,
+                "post": post
             })
         })
 
@@ -209,6 +187,48 @@ export async function LikePostRequest(post,likeType, authUserId) {
         return result
     }
 
+    else if (likeType === '-') {
+        const response = await fetch('http://127.0.0.1:8000/api/unlike-post/', {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}`
+            },
+            body: JSON.stringify({
+                'like_by': authUserId,
+                "post": post
+            })
+        })
 
+        if (!response.ok) {
+            return 'Network not Ok'
+        }
+
+        const result = await response.json()
+        console.log(result)
+        return result
+    }
+
+}
+
+
+export async function fetchingCommentPost(post_id) {
+    
+    const response = await fetch(`http://127.0.0.1:8000/api/comment?post=${post_id}`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        },
+    })
+
+
+    if (!response.ok) {
+        return 'Network not Ok'
+    }
+
+    const result = await response.json()
+    console.log(result)
+    return result
 
 }

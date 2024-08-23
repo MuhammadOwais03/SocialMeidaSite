@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react';
 
 
 const NotificationTicker = ({
-    tickerActive, setTickerActive
+    tickerActive, setTickerActive, tickerContent
 })=>{
 
     useEffect(()=>{
@@ -25,7 +25,7 @@ const NotificationTicker = ({
               <i className="fa-solid fa-exclamation"></i>
             </div>
             <div className="notify-ticker-content">
-              <p>Congratulation</p>
+              <p>{tickerContent}</p>
             </div>
           </div>
           <div className="loading-bar">

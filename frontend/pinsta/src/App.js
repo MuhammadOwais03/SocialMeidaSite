@@ -15,6 +15,7 @@ function App() {
   const [authorizedUser, setAuthorizedUser] = useState({})
   // const [isLoading, setIsLoading] = useState(false);
   const [tickerActive, setTickerActive] = useState('ticker-not-active')
+  const [tickerContent, setTickerContent] = useState("")
 
     const checkAuthAndFetchPosts = async () => {
       try {
@@ -60,15 +61,16 @@ function App() {
     <div className="App">
       {!hideSidebar && <Sidebar authorizedUser={authorizedUser} />} {/* Render Sidebar only if not on the Auth page */}
       <Routes>
-        <Route path="/" element={<Home setTickerActive={setTickerActive} posts={posts} setPosts={setPosts}  checkAuthAndFetchPosts={checkAuthAndFetchPosts} authorizedUser={authorizedUser} />} />
-        <Route path="/auth" element={<Auth setTickerActive={setTickerActive}/>} />
+        <Route path="/" element={<Home setTickerActive={setTickerActive} posts={posts} setPosts={setPosts}  checkAuthAndFetchPosts={checkAuthAndFetchPosts} authorizedUser={authorizedUser} setTickerContent={setTickerContent} />} />
+        <Route path="/auth" element={<Auth setTickerActive={setTickerActive} setTickerContent={setTickerContent}/>} />
         {/* Add more routes as needed */}
       </Routes>
 
-      {/* <NotificationTicker 
+      <NotificationTicker 
         tickerActive={tickerActive}
         setTickerActive={setTickerActive}
-      /> */}
+        tickerContent={tickerContent}
+      />
       
 
 

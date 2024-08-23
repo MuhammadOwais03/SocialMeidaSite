@@ -134,18 +134,28 @@
     font-weight: 300;
 }
 
+.comments form {
+    width: 100%;
+}
 
-.comments input {
+.comments form input {
     width: 100%;
     padding: 0.4rem;
     text-align: justify;
     border: none;
     font-size: 17px;
     padding-bottom: 0;
+    background: none;
 }
 
-.comments input:focus{
+.comments form input:focus{
     outline: none;
+}
+
+.comments form button {
+    /* opacity: 0; */
+    width: 0;
+    height: 0;
 }
 
 

@@ -65,7 +65,7 @@
 /* Notification Ticker */
 
 .notify-ticker-container {
-  position: absolute;
+  position: fixed;
   top: 10%;
   
   width:300px;
@@ -75,7 +75,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  
   transition: all 0.5s ease;
 
 }

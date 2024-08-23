@@ -1,45 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { LikePostRequest, get_token } from './server-requests';
+import { LikePostRequest, get_token, fetchingCommentPost } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
-// import { useWebSocket } from './WebSocketProvider';
-
-
-// function websocketOpen() {
-//     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-
-//     socket.onopen = function(e) {
-//         console.log('WebSocket connection opened');
-//     };
-
-//     socket.onmessage = function(e) {
-//         console.log(e)
-//         const data = JSON.parse(e.data);
-//         console.log('Notification:', data);
-//         // Display the notification to the user
-
-//         // let like_div = document.querySelector(`.like-post-${data.post_id}`)
-//         // if (like_div) {
-//         //     like_div.innerText = data.like_count + ' Likes';
-//         // } else {
-//         //     console.warn(`Element with class like-post-${data.post_id} not found.`);
-//         // }
-
-//         function tradeData() {
-//             return data.likes_count
-//         }
-//     };
-
-//     socket.onclose = function(e) {
-//         console.log('WebSocket connection closed');
-//     };
-
-// }
-
-
-// websocketOpen()
-
-
 
 
 function timeSince(dateString) {
@@ -70,11 +32,14 @@ const Post = ({
     close, setClose,
     caption, post,
     authorizedUser, 
-    socket
+    socket, setTickerActive,
+    setTickerContent, setCommentId
 }) => {
     const [likesCount, setLikesCount] = useState(post.likes_count);
+    const [commentCount, setCommentCount] = useState(post.comment_count)
     const [likeUsers, setLikeUsers] = useState(post.like_obj);
     const [isLikeAuth, setIsLikeAuth] = useState(false);
+    const [addComment, setAddComment] = useState("")
 
     useEffect(() => {
         // Handle incoming WebSocket messages
@@ -83,6 +48,10 @@ const Post = ({
             console.log(data)
             if (data.post_id === post.id) {
                 setLikesCount(data.like_count);
+                if (data.category === 'like_post'){
+                    setTickerContent(data.message)
+                    setTickerActive('ticker-active')
+                }
             }
         };
 
@@ -114,6 +83,18 @@ const Post = ({
         console.log(likesCount)
     
         setIsLikeAuth(!isLikeAuth);
+    };
+
+
+    const handleChange = (e) => {
+        setAddComment(e.target.value);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault(); 
+        console.log(addComment)
+        //Add comment logic
+        setAddComment(''); 
     };
 
     const Time = timeSince(post.created_at);
@@ -219,10 +200,22 @@ const Post = ({
                 <p className={`like-post-${post.id}`}>{likesCount} Likes</p>
                 <div className="post-caption">{captionContent}</div>
                 <div className="comments">
-                    <p onClick={() => setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active")}>
-                        {`View ${post.comment_count} comments`}
+                    <p onClick={() => {
+                        setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
+                        setCommentId(post.id);
+                    }}>
+                        {`View ${commentCount} comments`}
                     </p>
-                    <input type="text" placeholder='Add a comment...' />
+                    <form onSubmit={handleSubmit}>
+                        <input 
+                            type="text" 
+                            placeholder='Add a comment...'
+                            value={addComment}
+                            onChange={handleChange}
+                        />
+                        <button type='submit'>Add</button>
+                    </form>
+                    
                 </div>
             </div>
         </div>
@@ -231,66 +224,28 @@ const Post = ({
 
 
 
-const Comment = ({ comment, onAddReply }) => {
-    const [showReplies, setShowReplies] = useState(false);
-    const [showReplyForm, setShowReplyForm] = useState(false);
-    const [newReplyContent, setNewReplyContent] = useState('');
+const Comment = ({ comment, commentId }) => {
+    
+   
+    console.log(comment)
+    
+    let time = timeSince(comment.created_at)
 
-    const handleReplyChange = (e) => {
-        
-        setNewReplyContent(e.target.value);
-    };
-
-    const handleAddReply = () => {
-        
-        // handleAddReply()
-        if (newReplyContent.trim()) {
-            onAddReply(comment.id, newReplyContent);
-            setNewReplyContent('');
-            setShowReplyForm(false);
-        }
-        
-    };
+    
 
     return (
         <div className="comment">
             <div className="comment-header">
-                <img src={download} alt="" width="40px" height="40px" />
-                <h5>{comment.author}</h5>
+                <img src={`http://127.0.0.1:8000${comment.user_profile.profile_picture}`} alt="" width="40px" height="40px" />
+                <h5>{comment.user_profile.user.username}</h5>
             </div>
             <div className="comment-main">
                 <p>{comment.content}</p>
             </div>
             <div className="comment-footer">
-                <p>{comment.time}</p>
-                <span className="reply-toggle" onClick={() => setShowReplyForm(!showReplyForm)}>
-                    Reply
-                </span>
+                <p>{comment.created_at}</p>
+                
             </div>
-            {showReplyForm && (
-                <div className="reply-form">
-                    <textarea
-                        value={newReplyContent}
-                        onChange={handleReplyChange}
-                        placeholder="Write a reply..."
-                    />
-                    <button onClick={handleAddReply}>Add Reply</button>
-                </div>
-            )}
-            <div className="view-reply">
-                <span className='hr-line' onClick={() => setShowReplies(!showReplies)}>
-                    {!showReplies ? "View Replies" : "Less Replies"}
-                </span>
-            </div>
-
-            {showReplies && comment.replies && (
-                <div className="replies">
-                    {comment.replies.map(reply => (
-                        <Comment key={reply.id} comment={reply} onAddReply={handleAddReply} />
-
-                    ))}
-                </div>
-            )}
         </div>
     );
 };
@@ -300,13 +255,14 @@ const Home = ({
     posts, setPosts,
     
     checkAuthAndFetchPosts,
-    authorizedUser
+    authorizedUser, setTickerContent
 
 }) => {
     const [readMore, setReadMore] = useState(false);
     const [close, setClose] = useState("comment-not-active");
     const [isLoading, setIsLoading] = useState(false);
     const [comments, setComments] = useState([]);
+    const [commentId, setCommentId] = useState()
     
     
     
@@ -327,9 +283,37 @@ const Home = ({
         socket.onclose = function(e) {
             console.log('WebSocket connection closed');
         };
-        })
+    })
+
+    useEffect(()=>{
+
+        async function getComment() {
+            let get_comment_response = await fetchingCommentPost(commentId);
+            return get_comment_response;
+        }
         
-       
+        if (commentId) {
+            getComment().then(
+                (data) => {
+                    console.log(data)
+                    setComments(data)
+                    // setCommentId()
+                    comments.map(comment=>{
+                        console.log(comment)
+                    })
+                }  
+    
+            ).catch(
+                (error) => console.error('Error fetching comment:', error)
+            );
+        }
+
+        
+
+    }, [commentId])
+        
+
+        
 
     useEffect(() => {
 
@@ -351,36 +335,7 @@ const Home = ({
     }, []);
     
 
-    const handleAddReply = (commentId, replyContent) => {
-        const addReplyToComment = (comments) => {
-            return comments.map(comment => {
-                if (comment.id === commentId) {
-                    return {
-                        ...comment,
-                        replies: [
-                            ...comment.replies,
-                            {
-                                id: Date.now(), // Generate a unique ID
-                                author: 'New User', // Replace with current user's name
-                                content: replyContent,
-                                time: 'Just now',
-                                replies: [] // Start with an empty array for nested replies
-                            }
-                        ]
-                    };
-                } else if (comment.replies.length > 0) {
-                    return {
-                        ...comment,
-                        replies: addReplyToComment(comment.replies) // Recursively handle replies
-                    };
-                }
-                return comment;
-            });
-        };
-
-        setComments(addReplyToComment(comments));
-    };
-
+    
 
     const handlePostUpdate = (postId) => {
         console.log(`Post with ID ${postId} was updated.`);
@@ -407,8 +362,10 @@ const Home = ({
                             post={post}
                             authorizedUser={authorizedUser}
                             socket={socket}
-                            className={`Post-${post.id}`}
                             onUpdate={() => handlePostUpdate(post.id)}
+                            setTickerActive={setTickerActive}
+                            setTickerContent={setTickerContent}
+                            setCommentId={setCommentId}
                             
                            
                         />
@@ -417,9 +374,10 @@ const Home = ({
             </div>
             <div className={`comment-container ${close}`}>
                 <div className="comment-cont">
-                    {comments.map(comment => (
-                        <Comment key={comment.id} comment={comment} onAddReply={handleAddReply} />
-                    ))}
+                    
+                    {comments?(comments.map(comment => (
+                        <Comment key={comment.id} comment={comment} setCommentId={setCommentId} commentId={commentId} />
+                    ))):("No Comment Yet")}
                 </div>
                 <div className='cut' onClick={() => setClose(close === "comment-active" ? "comment-not-active" : "comment-active")}>
                     <i className="fa-solid fa-x"></i>
