@@ -232,3 +232,28 @@ export async function fetchingCommentPost(post_id) {
     return result
 
 }
+
+
+export async function AddComment(content, comment_author, post) {
+    const response = await fetch(`http://127.0.0.1:8000/api/comment/`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        },
+        body: JSON.stringify({
+            "content":content,
+            "comment_author":comment_author,
+            "post":post
+        })
+    })
+
+
+    if (!response.ok) {
+        return 'Network not Ok'
+    }
+
+    const result = await response.json()
+    console.log(result)
+    return result
+}

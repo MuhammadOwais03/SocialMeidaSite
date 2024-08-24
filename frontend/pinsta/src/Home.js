@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { LikePostRequest, get_token, fetchingCommentPost } from './server-requests';
+import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react';
+import { LikePostRequest, get_token, fetchingCommentPost, AddComment } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
 
@@ -32,7 +32,7 @@ const Post = ({
     close, setClose,
     caption, post,
     authorizedUser, 
-    socket, setTickerActive,
+    socket ,setTickerActive,
     setTickerContent, setCommentId
 }) => {
     const [likesCount, setLikesCount] = useState(post.likes_count);
@@ -41,27 +41,61 @@ const Post = ({
     const [isLikeAuth, setIsLikeAuth] = useState(false);
     const [addComment, setAddComment] = useState("")
 
+
+    //Like Notification Message
     useEffect(() => {
-        // Handle incoming WebSocket messages
+        
         const handleSocketMessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log(data)
-            if (data.post_id === post.id) {
-                setLikesCount(data.like_count);
-                if (data.category === 'like_post'){
+            console.log(data, 's')
+            if (data.category==='like_post'||data.category==='dislike'){
+                console.log('outside')
+                if (data.post_id === post.id) {
+                    console.log('inside')
+                    setLikesCount(data.like_count); 
                     setTickerContent(data.message)
                     setTickerActive('ticker-active')
+                    
+                }
+            }
+            else if (data.category==='comment') {
+                console.log('add', post.id)
+                if (data.post === post.id) {
+                    console.log('inside comment')
+                    setCommentCount(data.comment_count);
+                    setTickerContent(data.message)
+                    setTickerActive('ticker-active')
+                   
                 }
             }
         };
 
         socket.addEventListener('message', handleSocketMessage);
 
-        // Cleanup on unmount
+        
         return () => {
             socket.removeEventListener('message', handleSocketMessage);
         };
     }, [socket, post.id]);
+
+
+
+    //Comment Notification Message 
+    // useEffect(()=>{
+    //     const handleCommentSocketMessage = (e) => {
+    //         const data = JSON.parse(e.data)
+    //         console.log(data)
+    //     }
+
+    //     commentSocket.addEventListener('message', handleCommentSocketMessage)
+
+    //     return ()=>{
+    //         commentSocket.removeEventListener('message', handleCommentSocketMessage)
+    //     }
+
+    // }, [commentSocket, post.id])
+
+
 
     useEffect(() => {
         const userHasLiked = likeUsers.some(obj => obj.like_by === authorizedUser.user.id);
@@ -92,8 +126,21 @@ const Post = ({
 
     const handleSubmit = (e) => {
         e.preventDefault(); 
-        console.log(addComment)
-        //Add comment logic
+        
+        async function Comment() {
+            let response = await AddComment(addComment, authorizedUser.user.id,post.id)
+            return response
+        }
+
+        console.log(Comment())
+
+        setCommentCount(commentCount+1)
+
+        
+
+        
+
+
         setAddComment(''); 
     };
 
@@ -267,23 +314,69 @@ const Home = ({
     
     
 
-    // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+    // // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+    // const socket = useMemo(() => {
+    //     return new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+    // }, []); 
+
+    // const commentSocket = useMemo(()=>{
+    //     return new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`)
+    // })
+
+    // useEffect(()=>{
+        
+
+        
+
+    //     socket.onopen = function(e) {
+    //         console.log('Like WebSocket connection opened');
+    //     };
+
+        
+
+    //     socket.onclose = function(e) {
+    //         console.log('Like WebSocket connection closed', e);
+    //     };
+    //     socket.onerror = (error) => {
+    //         console.error('Like WebSocket error:', error);
+    //     };
+
+    //     commentSocket.onopen = function(e) {
+    //         console.log('Comment notification opened')
+    //     }
+
+    //     commentSocket.onclose = function(e) {
+    //         console.log('Comment WebSocket connection closed');
+    //     };
+
+    //     commentSocket.onerror = (error) => {
+    //         console.error('Comment WebSocket error:', error);
+    //     };
+    // }, [socket, commentSocket])
+
     const socket = useMemo(() => {
-        return new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-    }, []); // Initialize socket only once
-    useEffect(()=>{
-        
+        const ws = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+        ws.onopen = () => console.log('Like WebSocket connection opened');
+        ws.onclose = (e) => console.log('Like WebSocket connection closed', e);
+        ws.onerror = (error) => console.error('Like WebSocket error:', error);
+        return ws;
+    }, []);
 
-        socket.onopen = function(e) {
-            console.log('WebSocket connection opened');
+    // const commentSocket = useMemo(() => {
+    //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`);
+    //     ws.onopen = () => console.log('Comment WebSocket connection opened');
+    //     ws.onclose = (e) => console.log('Comment WebSocket connection closed', e);
+    //     ws.onerror = (error) => console.error('Comment WebSocket error:', error);
+    //     return ws;
+    // }, []);
+
+    useEffect(() => {
+        // Cleanup on component unmount
+        return () => {
+            if (socket.readyState === WebSocket.OPEN) socket.close();
+            // if (commentSocket.readyState === WebSocket.OPEN) commentSocket.close();
         };
-
-        
-
-        socket.onclose = function(e) {
-            console.log('WebSocket connection closed');
-        };
-    })
+    }, [socket]);
 
     useEffect(()=>{
 
@@ -362,6 +455,7 @@ const Home = ({
                             post={post}
                             authorizedUser={authorizedUser}
                             socket={socket}
+                            // commentSocket={commentSocket}
                             onUpdate={() => handlePostUpdate(post.id)}
                             setTickerActive={setTickerActive}
                             setTickerContent={setTickerContent}
