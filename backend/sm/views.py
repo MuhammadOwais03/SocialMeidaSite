@@ -276,6 +276,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         

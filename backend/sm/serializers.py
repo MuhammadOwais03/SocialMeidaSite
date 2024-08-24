@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from .models import *
 from .helper import *
+from .comment_notification import comment_notification_to_all_friends 
 
 
 
@@ -69,6 +70,21 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
+
+
+    def create(self, validated_data):
+
+        post = validated_data.get('post')
+        comment_author = validated_data.get('comment_author')
+       
+       
+        author = User.objects.get(username=post.author)
+        
+
+        response = super().create(validated_data)
+        comment_notification_to_all_friends(post, author, comment_author)
+
+        return response
 
     def get_user_profile(self, obj):
         user = User.objects.get(username=obj.comment_author)

@@ -89,6 +89,7 @@ class Comment(models.Model):
     post = models.ForeignKey("Post", on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
+    
    
 
     def __str__(self):
@@ -124,6 +125,7 @@ class Notification(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     message = models.TextField()
+    type_of = models.CharField(max_length=20)
 
     def __str__(self):
         return f"Notification for {self.to_user.username}: {self.message}"

@@ -52,6 +52,7 @@ def like_notification_to_all_friend(request, Type):
             by_user=like_user,
             content_type=ContentType.objects.get_for_model(post),
             object_id=post.id,
+            type_of="like",
         ).exists():
             # Create and save a new notification
             notification = Notification(
@@ -60,6 +61,7 @@ def like_notification_to_all_friend(request, Type):
                 content_type=ContentType.objects.get_for_model(post),
                 object_id=post.id,
                 message=message,
+                type_of="like",
             )
             notification.save()
 
@@ -128,6 +130,7 @@ def like_notification_to_all_friend(request, Type):
                         by_user=dislike_user.id,
                         to_user=user_obj,
                         content_type=ContentType.objects.get_for_model(post),
+                        type_of="like",
                     )
                     if notification.exists():
                         notification[0].delete()
