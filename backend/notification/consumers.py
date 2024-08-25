@@ -118,7 +118,7 @@ class LikeNotification(AsyncWebsocketConsumer):
     async def like_notification_message(self, event):
 
         category = event["category"]
-        print(category)
+        
         if category.lower() == "dislike":
 
             sender_id = event["sender_id"]

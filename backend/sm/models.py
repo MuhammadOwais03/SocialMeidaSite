@@ -20,6 +20,8 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     is_loggedIn = models.BooleanField(default=False, null=True, blank=True)
+    username = models.CharField(max_length=20, null=True, blank=True)
+    full_name = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.user.username

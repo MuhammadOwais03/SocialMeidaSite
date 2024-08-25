@@ -6,27 +6,23 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from .models import *
 from .helper import *
-from .comment_notification import comment_notification_to_all_friends 
-
-
-
+from .comment_notification import comment_notification_to_all_friends
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','username','email','first_name','last_name','date_joined']
-        #['id','username','email','first_name','last_name','is_active','date_joined']
+        fields = ["id", "username", "email", "first_name", "last_name", "date_joined"]
+        # ['id','username','email','first_name','last_name','is_active','date_joined']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
 
-    
     user = UserSerializer()
 
     class Meta:
         model = UserProfile
-        fields ="__all__"
+        fields = "__all__"
 
 
 from django.contrib.auth import authenticate
@@ -49,12 +45,14 @@ class FriendSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        user = attrs.get('user')
-        friend = attrs.get('friend')
+        user = attrs.get("user")
+        friend = attrs.get("friend")
 
         # Check if the users are already friends
-        if FriendAccepted.objects.filter(user=user, of_friend=friend).exists() or \
-           FriendAccepted.objects.filter(user=friend, of_friend=user).exists():
+        if (
+            FriendAccepted.objects.filter(user=user, of_friend=friend).exists()
+            or FriendAccepted.objects.filter(user=friend, of_friend=user).exists()
+        ):
             raise serializers.ValidationError("Both users are already friends")
 
         # Check if a friend request has already been generated
@@ -62,7 +60,8 @@ class FriendSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Friend request already generated")
 
         return attrs
-        
+
+
 class CommentSerializer(serializers.ModelSerializer):
 
     user_profile = serializers.SerializerMethodField()
@@ -71,15 +70,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = "__all__"
 
-
     def create(self, validated_data):
 
-        post = validated_data.get('post')
-        comment_author = validated_data.get('comment_author')
-       
-       
+        post = validated_data.get("post")
+        comment_author = validated_data.get("comment_author")
+
         author = User.objects.get(username=post.author)
-        
 
         response = super().create(validated_data)
         comment_notification_to_all_friends(post, author, comment_author)
@@ -92,11 +88,8 @@ class CommentSerializer(serializers.ModelSerializer):
         print(user_profile.id, user.id)
 
         serializer = UserProfileSerializer(user_profile)
-        
+
         return serializer.data
-
-
-    
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -104,8 +97,6 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = "__all__"
-
-    
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -121,17 +112,14 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, obj):
         return Comment.objects.filter(post=obj).count()
-    
-    def get_likes_count(self, obj):  
-        
+
+    def get_likes_count(self, obj):
+
         return Like.objects.filter(post=obj).count()
+
     def get_like_obj(self, obj):
         likes = Like.objects.filter(post=obj)
         return LikeSerializer(likes, many=True).data
-    
-
-
-
 
 
 class SavedPostSerializer(serializers.ModelSerializer):
@@ -142,7 +130,32 @@ class SavedPostSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    to_user = UserSerializer()
+    by_user = UserSerializer()
+    content_object = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
         fields = "__all__"
+
+    def get_content_object(self, obj):
+        """Dynamically select the correct serializer based on the content type."""
+        if obj.content_type.model == "post":
+            return PostSerializer(obj.content_object).data
+        elif obj.content_type.model == "comment":
+            return CommentSerializer(obj.content_object).data
+        # Add more elif statements for other content types
+        else:
+            return None  # or handle this case as needed
+
+    def get_profile_picture(self, obj):
+        try:
+            user_profile = UserProfile.objects.get(user=obj.by_user)
+            return (
+                user_profile.profile_picture.url
+                if user_profile.profile_picture
+                else None
+            )
+        except UserProfile.DoesNotExist:
+            return None

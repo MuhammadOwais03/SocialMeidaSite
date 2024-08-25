@@ -137,6 +137,7 @@ def like_notification_to_all_friend(request, Type):
                     notification_count = Notification.objects.filter(
                         to_user=user_obj, is_seen=False
                     ).count()
+                    print(notification_count)
                     group_name = f"user_{friend}"
                     friend_id = friend
 

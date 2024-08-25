@@ -74,7 +74,9 @@ def user_registration(request):
         password=password,
     )
 
-    user_profile = UserProfile(user=user)
+    user_profile = UserProfile(
+        user=user, full_name=f"{first_name} {last_name}", username=username
+    )
     user_profile.save()
     serializer = UserSerializer(user)
 
@@ -179,7 +181,7 @@ class AuthenticatedUserViewSet(APIView):
         user_profile_serializer = UserProfileSerializer(user_profile)
         user_serializer = UserSerializer(user)
 
-        print(user_profile_serializer.data)
+        # print(user_profile_serializer.data)
         return Response(user_profile_serializer.data)
 
 
@@ -245,13 +247,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        
+
         # Get friends of the authenticated user
-        friends = FriendAccepted.objects.filter(user=user).values_list('of_friend', flat=True)
-        
+        friends = FriendAccepted.objects.filter(user=user).values_list(
+            "of_friend", flat=True
+        )
+
         # Retrieve posts authored by friends or the authenticated user
         queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user))
-        
+
         # Sort posts by created_at in descending order (most recent first)
         return queryset
 
@@ -279,18 +283,17 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        
-        post_id = request.query_params.get('post', None)
+
+        post_id = request.query_params.get("post", None)
         if post_id is not None:
             comments = Comment.objects.filter(post_id=post_id)
         else:
             comments = Comment.objects.all()
 
-        
         serializer = self.get_serializer(comments, many=True)
-        
-        
+
         return Response(serializer.data)
+
 
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
@@ -363,15 +366,15 @@ def unlike_post(request, *args, **kwargs):
     like = Like.objects.filter(like_by=like_by, post=post).first()
 
     func_dict = {
-            "author_id": user_id,
-            "like_user": like_by,
-            "post_id": post,
+        "author_id": user_id,
+        "like_user": like_by,
+        "post_id": post,
     }
 
     print(func_dict)
 
     if like:
-        like_notification_to_all_friend(func_dict, 'dislike_post')
+        like_notification_to_all_friend(func_dict, "dislike_post")
         like.delete()
         return Response({"success": "Unlike the post successfully"}, status=200)
     else:
@@ -394,16 +397,104 @@ class SavedPostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+class SearchUserProfile(viewsets.ModelViewSet):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        name = request.query_params.get("name", "")
+        user = request.user
+        name = "None" if name == "" else name
+        # Filter user profiles based on the search term
+        users = UserProfile.objects.filter(
+            Q(full_name__icontains=name) | Q(username__icontains=name)
+        )
+
+        # Extract user IDs from the filtered users
+        user_ids = users.values_list("id", flat=True)
+
+        # Get all accepted friendships and pending friend requests
+        accepted_friendships = FriendAccepted.objects.filter(
+            Q(user=user, of_friend__in=user_ids) | Q(user__in=user_ids, of_friend=user)
+        )
+
+        pending_requests = Friend.objects.filter(
+            Q(user=user, friend__in=user_ids, is_pending=True)
+            | Q(user__in=user_ids, friend=user, is_pending=True)
+        )
+
+        # Create sets for quick lookup
+        accepted_friends = set(
+            friend.of_friend.id if friend.user == user else friend.user.id
+            for friend in accepted_friendships
+        )
+
+        pending_requests_set = set(
+            request.friend.id if request.user == user else request.user.id
+            for request in pending_requests
+        )
+
+        # Serialize the user profiles
+        serializer = UserProfileSerializer(users, many=True)
+
+        # Annotate the serializer data with friendship status
+        for user_data in serializer.data:
+            user_id = user_data["id"]
+            if user_id in accepted_friends:
+                user_data["friendship_status"] = "accepted"
+            elif user_id in pending_requests_set:
+                user_data["friendship_status"] = "pending"
+            else:
+                user_data["friendship_status"] = "none"
+
+        return Response(serializer.data)
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        type_ = request.query_params.get("type", "")
+        user_id = request.query_params.get("id", "")
+        print(type_)
+        if type_.lower() == "content":
+            
+            notification = Notification.objects.filter(
+                to_user=user_id, is_seen=False
+            ).order_by("-created_at")
+
+            if notification.exists():
+                for notify in notification:
+                    notify.is_seen=True
+                    notify.save()
+                serializer = NotificationSerializer(notification, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "No notifications found."}, status=status.HTTP_200_OK
+            )
+        else:
+            notification_count = Notification.objects.filter(
+                to_user=user_id, is_seen=False
+            ).count()
+            print(notification_count)
+            return Response({"notification_count": notification_count})
+
+
 class MyProtectedView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        print(request.headers, "329")
+        # print(request.headers, "329")
         user = request.user
         username = "None"
         if user.is_authenticated:
             username = user.username
             user_ = User.objects.get(username=username)
-            print(user_.id)
+            # print(user_.id)
         return Response(username)
