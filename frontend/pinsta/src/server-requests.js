@@ -257,3 +257,49 @@ export async function AddComment(content, comment_author, post) {
     console.log(result)
     return result
 }
+
+
+
+export async function SearchUsers(name) {
+    const response = await fetch(`http://127.0.0.1:8000/api/search?name=${name}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        },
+        
+    })
+
+    
+    if (!response.ok) {
+        return 'Network not Ok'
+    }
+
+    const result = await response.json()
+    console.log(result)
+    return result
+}
+
+export async function getNotification(user_id, type) {
+    console.log(user_id)
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/notification/?id=${user_id}&type=${type}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}`
+            }
+        });
+
+        if (!response.ok) {
+            console.error(`Network response was not ok: ${response.statusText}`);
+            return 'Network not Ok';
+        }
+
+        const result = await response.json();
+        console.log('Notifications:', result);
+        return result;
+
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return 'Fetch error';
+    }
+}

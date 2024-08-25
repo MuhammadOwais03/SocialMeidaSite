@@ -33,7 +33,8 @@ const Post = ({
     caption, post,
     authorizedUser, 
     socket ,setTickerActive,
-    setTickerContent, setCommentId
+    setTickerContent, setCommentId,
+    setNotifyChannelCount
 }) => {
     const [likesCount, setLikesCount] = useState(post.likes_count);
     const [commentCount, setCommentCount] = useState(post.comment_count)
@@ -47,13 +48,15 @@ const Post = ({
         
         const handleSocketMessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log(data, 's')
+            console.log(data, post.id)
             if (data.category==='like_post'||data.category==='dislike'){
                 console.log('outside')
                 if (data.post_id === post.id) {
                     console.log('inside')
                     setLikesCount(data.like_count); 
                     setTickerContent(data.message)
+                    setNotifyChannelCount(data.notification_count)
+                    console.log(data.notification_count)
                     setTickerActive('ticker-active')
                     
                 }
@@ -64,6 +67,7 @@ const Post = ({
                     console.log('inside comment')
                     setCommentCount(data.comment_count);
                     setTickerContent(data.message)
+                    setNotifyChannelCount(data.notification_count)
                     setTickerActive('ticker-active')
                    
                 }
@@ -80,20 +84,7 @@ const Post = ({
 
 
 
-    //Comment Notification Message 
-    // useEffect(()=>{
-    //     const handleCommentSocketMessage = (e) => {
-    //         const data = JSON.parse(e.data)
-    //         console.log(data)
-    //     }
-
-    //     commentSocket.addEventListener('message', handleCommentSocketMessage)
-
-    //     return ()=>{
-    //         commentSocket.removeEventListener('message', handleCommentSocketMessage)
-    //     }
-
-    // }, [commentSocket, post.id])
+   
 
 
 
@@ -302,7 +293,8 @@ const Home = ({
     posts, setPosts,
     
     checkAuthAndFetchPosts,
-    authorizedUser, setTickerContent
+    authorizedUser, setTickerContent,
+    setNotifyChannelCount
 
 }) => {
     const [readMore, setReadMore] = useState(false);
@@ -460,6 +452,7 @@ const Home = ({
                             setTickerActive={setTickerActive}
                             setTickerContent={setTickerContent}
                             setCommentId={setCommentId}
+                            setNotifyChannelCount={setNotifyChannelCount}
                             
                            
                         />

@@ -386,3 +386,7 @@
 .comment-not-active{
     display:none;
 }
+
+.comments button {
+    opacity: 0;
+}
