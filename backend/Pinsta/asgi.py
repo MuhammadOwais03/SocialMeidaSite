@@ -13,9 +13,9 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from django.urls import path
 from notification.consumers import (
-    NotificationConsumer,
+    # NotificationConsumer,
     LikeNotification,
-    CommentNotificationConsumer,
+    # FriendNotification,
 )
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Pinsta.settings")
@@ -24,10 +24,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Pinsta.settings")
 django_asgi_app = get_asgi_application()
 
 websocket_urlpatterns = [
-    path("ws/notifications/", NotificationConsumer.as_asgi()),
+    # path("ws/notifications/", NotificationConsumer.as_asgi()),
     path("ws/like-notifications/", LikeNotification.as_asgi()),
-    path("ws/dislike-notifications/", LikeNotification.as_asgi()),
-    # path("ws/comment-notification/", CommentNotificationConsumer.as_asgi()),
+    # path("ws/dislike-notifications/", LikeNotification.as_asgi()),
+    # path("ws/friend-notifications/", FriendNotification.as_asgi()),
 ]
 
 application = ProtocolTypeRouter(

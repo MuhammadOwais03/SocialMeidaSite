@@ -40,6 +40,10 @@ class LoginSerializer(serializers.Serializer):
 
 
 class FriendSerializer(serializers.ModelSerializer):
+
+    user_profile = serializers.SerializerMethodField()
+    friend_request_profile = serializers.SerializerMethodField()
+
     class Meta:
         model = Friend
         fields = "__all__"
@@ -60,6 +64,20 @@ class FriendSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Friend request already generated")
 
         return attrs
+    
+    def get_user_profile(self, obj):
+        user = User.objects.get(username=obj.user)
+        user_profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(user_profile)
+
+        return serializer.data
+    
+    def get_friend_request_profile(self, obj):
+        friend = User.objects.get(username=obj.friend)
+        user_profile = UserProfile.objects.get(user=friend)
+        serializer = UserProfileSerializer(user_profile)
+
+        return serializer.data
 
 
 class CommentSerializer(serializers.ModelSerializer):

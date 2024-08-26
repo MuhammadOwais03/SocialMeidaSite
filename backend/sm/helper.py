@@ -38,10 +38,17 @@ def user_that_likes_the_post(post):
 
 
 def like_notification_to_all_friend(request, Type):
-    user_id = request.get("author_id")
-    like_user = request.get("like_user")
-    post_id = request.get("post_id")
-    user = User.objects.get(id=user_id)
+
+    if Type != "friend_request" and Type !="reject_cancel":
+        user_id = request.get("author_id")
+        like_user = request.get("like_user")
+        post_id = request.get("post_id")
+        user = User.objects.get(id=user_id)
+    else:
+        from_user = request.get("user")
+        to_user = request.get("friend")
+        serializer_data = request.get("serializer_data")
+        print(serializer_data)
 
     if Type.lower() == "like_post":
         post = Post.objects.get(id=post_id)
@@ -154,3 +161,59 @@ def like_notification_to_all_friend(request, Type):
                             "post_id": post_id,
                         },
                     )
+    elif Type == "friend_request":
+        message = f"{serializer_data['user_profile']['username']} gives you a follow request {serializer_data['friend_request_profile']['username']}"
+        print(message)
+        friend_request = Friend.objects.get(user=from_user, friend=to_user)
+        From_User = User.objects.get(id=from_user)
+        To_User = User.objects.get(id=to_user)
+
+        notifications = Notification.objects.filter(
+            by_user=From_User,
+            to_user=To_User,
+            content_type=ContentType.objects.get_for_model(friend_request),
+            type_of="friend_request",
+        )
+
+        if not notifications.exists():
+
+            notification = Notification(
+                to_user=To_User,
+                by_user=From_User,
+                content_type=ContentType.objects.get_for_model(friend_request),
+                object_id=friend_request.id,
+                message=message,
+                type_of="friend_request",
+            )
+            notification.save()
+
+        notification_count = Notification.objects.filter(to_user=to_user).count()
+        group_name = f"user_{to_user}"
+        print(group_name, "in helper")
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"{group_name}",
+            {
+                "type": "like_notification_message",
+                "category": "friend_request",
+                "message": message,
+                "sender_id": from_user,
+                "receiving": to_user,
+                "notification_count": notification_count,
+                "data": serializer_data,
+            },
+        )
+    elif Type == "reject_cancel":
+        notification_count = request.get("notification_count")
+        receiver = request.get("receiver")
+        group_name = f"user_{receiver}"
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"{group_name}",
+            {
+                "type": "like_notification_message",
+                "category": "reject_cancel",
+                "notification_count": notification_count,
+            },
+        )

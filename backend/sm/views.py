@@ -2,7 +2,7 @@ from django.http import Http404
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
-
+from django.contrib.contenttypes.models import ContentType
 
 from rest_framework.decorators import (
     api_view,
@@ -203,10 +203,12 @@ class FriendViewSet(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-
+        print(request.data)
         serializer = FriendSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            request.data["serializer_data"] = serializer.data
+            like_notification_to_all_friend(request.data, "friend_request")
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -235,6 +237,25 @@ class FriendViewSet(APIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Friend Exists"})
+
+    def delete(self, request):
+        print(request)
+        user_id = request.query_params.get("auth_user", "")
+        friend_id = request.query_params.get("to_user", "")
+        friend = Friend.objects.filter(user=user_id, friend=friend_id)
+        if friend.exists():
+            notification = Notification.objects.filter(
+                    content_type=ContentType.objects.get_for_model(friend[0]),
+                    type_of="friend_request",
+                    )
+            if notification.exists():
+                notification[0].delete()
+            receiver_user = User.objects.get(id=friend_id)
+            notification_count = Notification.objects.filter(to_user=receiver_user).count()
+            like_notification_to_all_friend({"notification_count":notification_count, 'receiver':friend_id}, "reject_cancel")
+            friend[0].delete()
+            return Response({"status", "successfully delete"})
+        return Response({"status", "unsuccessfull to delete"})
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -446,6 +467,10 @@ class SearchUserProfile(viewsets.ModelViewSet):
                 user_data["friendship_status"] = "accepted"
             elif user_id in pending_requests_set:
                 user_data["friendship_status"] = "pending"
+                if user_id != request.user.id and not Friend.objects.filter(user=request.user.id, friend=user_id).exists():
+                     user_data["friendship_status"] = 'to_accept'
+                elif user_id != request.user.id and  Friend.objects.filter(user=request.user.id, friend=user_id).exists():
+                     user_data["friendship_status"] = 'requested'
             else:
                 user_data["friendship_status"] = "none"
 
@@ -463,14 +488,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
         user_id = request.query_params.get("id", "")
         print(type_)
         if type_.lower() == "content":
-            
+
             notification = Notification.objects.filter(
                 to_user=user_id, is_seen=False
             ).order_by("-created_at")
 
             if notification.exists():
                 for notify in notification:
-                    notify.is_seen=True
+                    notify.is_seen = True
                     notify.save()
                 serializer = NotificationSerializer(notification, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
