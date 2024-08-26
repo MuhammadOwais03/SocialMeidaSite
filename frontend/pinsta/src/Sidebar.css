@@ -332,23 +332,25 @@ i, svg {
 .friend-content .btn-accepted, 
 .friend-content .btn-none {
     background-color: #1877f2;
-    padding: 1rem 2rem;
+    padding: 1rem 1rem;
     color: white;
-    font-size: 18px;
+    font-size: 15px;
     text-transform: uppercase;
     border: none;
     outline: none;
     border-radius: 10px;
+    cursor: pointer;
 }
 .friend-content .btn-pending {
     background-color: #dbdbdb;
-    padding: 1rem 2rem;
+    padding: 1rem 1rem;
     color: black;
-    font-size: 18px;
+    font-size: 15px;
     text-transform: uppercase;
     border: none;
     outline: none;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 

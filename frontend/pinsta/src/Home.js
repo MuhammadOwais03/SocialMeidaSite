@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useRef 
 import { LikePostRequest, get_token, fetchingCommentPost, AddComment } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
+import useWebSocket from './useWebSockets.js';
 
 
 function timeSince(dateString) {
@@ -32,55 +33,82 @@ const Post = ({
     close, setClose,
     caption, post,
     authorizedUser, 
-    socket ,setTickerActive,
+    // socket,
+    setTickerActive,
     setTickerContent, setCommentId,
     setNotifyChannelCount
 }) => {
+
+//     const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/notifications/?token=${get_token('accessToken')}`);
+
+//   useEffect(() => {
+//     console.log(messages); // Handle WebSocket messages here if needed
+//   }, [messages]);
+
+
     const [likesCount, setLikesCount] = useState(post.likes_count);
     const [commentCount, setCommentCount] = useState(post.comment_count)
     const [likeUsers, setLikeUsers] = useState(post.like_obj);
     const [isLikeAuth, setIsLikeAuth] = useState(false);
     const [addComment, setAddComment] = useState("")
 
+    const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+
+    useEffect(() => {
+        console.log(messages); // Handle WebSocket messages here if needed
+                 if (messages.category === 'like_post' || messages.category === 'dislike') {
+                if (messages.post_id === post.id) {
+                    setLikesCount(messages.like_count); 
+                    setTickerContent(messages.message);
+                    setNotifyChannelCount(messages.notification_count);
+                    setTickerActive('ticker-active');
+                }
+            } else if (messages.category === 'comment') {
+                if (messages.post === post.id) {
+                    setCommentCount(messages.comment_count);
+                    setTickerContent(messages.message);
+                    setNotifyChannelCount(messages.notification_count);
+                    setTickerActive('ticker-active');
+                }
+            }
+    }, [messages]);
 
     //Like Notification Message
-    useEffect(() => {
-        
-        const handleSocketMessage = (e) => {
-            const data = JSON.parse(e.data);
-            console.log(data, post.id)
-            if (data.category==='like_post'||data.category==='dislike'){
-                console.log('outside')
-                if (data.post_id === post.id) {
-                    console.log('inside')
-                    setLikesCount(data.like_count); 
-                    setTickerContent(data.message)
-                    setNotifyChannelCount(data.notification_count)
-                    console.log(data.notification_count)
-                    setTickerActive('ticker-active')
-                    
-                }
-            }
-            else if (data.category==='comment') {
-                console.log('add', post.id)
-                if (data.post === post.id) {
-                    console.log('inside comment')
-                    setCommentCount(data.comment_count);
-                    setTickerContent(data.message)
-                    setNotifyChannelCount(data.notification_count)
-                    setTickerActive('ticker-active')
-                   
-                }
-            }
-        };
-
-        socket.addEventListener('message', handleSocketMessage);
-
-        
-        return () => {
-            socket.removeEventListener('message', handleSocketMessage);
-        };
-    }, [socket, post.id]);
+    // useEffect(() => {
+    //     if (!socket) return; // Exit if socket is not initialized
+    
+    //     const handleSocketMessage = (e) => {
+    //         const data = JSON.parse(e.data);
+    //         console.log(data, post.id);
+    
+    //         if (data.category === 'like_post' || data.category === 'dislike') {
+    //             if (data.post_id === post.id) {
+    //                 setLikesCount(data.like_count); 
+    //                 setTickerContent(data.message);
+    //                 setNotifyChannelCount(data.notification_count);
+    //                 setTickerActive('ticker-active');
+    //             }
+    //         } else if (data.category === 'comment') {
+    //             if (data.post === post.id) {
+    //                 setCommentCount(data.comment_count);
+    //                 setTickerContent(data.message);
+    //                 setNotifyChannelCount(data.notification_count);
+    //                 setTickerActive('ticker-active');
+    //             }
+    //         } else if (data.category === 'friend_request') {
+    //             console.log("Friend request received");
+    //             // Handle friend request
+    //         }
+    //     };
+    
+    //     socket.addEventListener('message', handleSocketMessage);
+    
+    //     return () => {
+    //         socket.removeEventListener('message', handleSocketMessage);
+    //     };
+    // }, [socket, post.id]);
+   
+    
 
 
 
@@ -346,29 +374,29 @@ const Home = ({
     //     };
     // }, [socket, commentSocket])
 
-    const socket = useMemo(() => {
-        const ws = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-        ws.onopen = () => console.log('Like WebSocket connection opened');
-        ws.onclose = (e) => console.log('Like WebSocket connection closed', e);
-        ws.onerror = (error) => console.error('Like WebSocket error:', error);
-        return ws;
-    }, []);
-
-    // const commentSocket = useMemo(() => {
-    //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`);
-    //     ws.onopen = () => console.log('Comment WebSocket connection opened');
-    //     ws.onclose = (e) => console.log('Comment WebSocket connection closed', e);
-    //     ws.onerror = (error) => console.error('Comment WebSocket error:', error);
+    // const socket = useMemo(() => {
+    //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+    //     ws.onopen = () => console.log('Like WebSocket connection opened');
+    //     ws.onclose = (e) => console.log('Like WebSocket connection closed', e);
+    //     ws.onerror = (error) => console.error('Like WebSocket error:', error);
     //     return ws;
     // }, []);
 
-    useEffect(() => {
-        // Cleanup on component unmount
-        return () => {
-            if (socket.readyState === WebSocket.OPEN) socket.close();
-            // if (commentSocket.readyState === WebSocket.OPEN) commentSocket.close();
-        };
-    }, [socket]);
+    // // const commentSocket = useMemo(() => {
+    // //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`);
+    // //     ws.onopen = () => console.log('Comment WebSocket connection opened');
+    // //     ws.onclose = (e) => console.log('Comment WebSocket connection closed', e);
+    // //     ws.onerror = (error) => console.error('Comment WebSocket error:', error);
+    // //     return ws;
+    // // }, []);
+
+    // useEffect(() => {
+    //     // Cleanup on component unmount
+    //     return () => {
+    //         if (socket.readyState === WebSocket.OPEN) socket.close();
+    //         // if (commentSocket.readyState === WebSocket.OPEN) commentSocket.close();
+    //     };
+    // }, [socket]);
 
     useEffect(()=>{
 
@@ -446,7 +474,7 @@ const Home = ({
                             setClose={setClose}
                             post={post}
                             authorizedUser={authorizedUser}
-                            socket={socket}
+                            // socket={socket}
                             // commentSocket={commentSocket}
                             onUpdate={() => handlePostUpdate(post.id)}
                             setTickerActive={setTickerActive}

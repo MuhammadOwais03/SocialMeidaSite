@@ -303,3 +303,74 @@ export async function getNotification(user_id, type) {
         return 'Fetch error';
     }
 }
+
+
+export async function followRequest(type, auth_user, to_user) {
+    
+
+    let data;
+
+    
+
+    data = {
+        "user":auth_user,
+        "friend":to_user
+    }
+    let method;
+
+    console.log(type)
+
+    if (type==='btn-none') {
+        method="POST"
+    } else if (type==='btn-pending') {
+        method="DELETE"
+    }
+
+    let response;
+    try {
+        if (method==="POST") {
+
+             response = await fetch(`http://127.0.0.1:8000/api/friend/`, {
+                method:"POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${get_token('accessToken')}`
+                },
+                body:JSON.stringify(data)
+            });
+            if (!response.ok) {
+                console.error(`Network response was not ok: ${response.statusText}`);
+                return 'Network not Ok';
+            }
+    
+            const result = await response.json();
+            console.log('friend-request:', result);
+            return result;
+        }
+
+        else if (method==='DELETE') {
+             response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}&to_user=${to_user}`, {
+                method:"DELETE",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${get_token('accessToken')}`
+                },
+                
+            });
+            if (!response.ok) {
+                // console.error(`Network response was not ok: ${response.statusText}`);
+                return 'Network not Ok';
+            }
+    
+            const result = await response.json();
+            console.log('friend-request:', result);
+            return result;
+        }
+
+       
+
+    } catch (error) {
+        // console.error('Fetch error:', error);
+        return 'Fetch error';
+    }
+}

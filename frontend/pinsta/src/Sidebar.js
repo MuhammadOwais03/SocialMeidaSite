@@ -1,6 +1,102 @@
-import React, { useEffect, useState } from "react";
-import { SearchUsers, getNotification } from "./server-requests";
+import React, { useEffect, useState, useMemo } from "react";
+import { SearchUsers, getNotification, followRequest, get_token } from "./server-requests";
 import './Sidebar.css';
+import useWebSocket from './useWebSockets.js';
+
+
+
+const RenderButton = ({ data, auth_user, to_user }) => {
+  const [followBtn, setFollowBtn] = useState("");
+
+  async function follow() {
+    let response = await followRequest(followBtn, auth_user, to_user)
+    console.log(response)
+    return response
+  }
+
+  async function setFollow(newClass) {
+    let r = await setFollowBtn(newClass);
+  }
+
+  function handleFollowing(e) {
+
+
+
+    const newClass = e.target.className;
+    setFollow(newClass)
+
+    console.log("Button class set to:", newClass);
+  }
+
+  useEffect(() => {
+    if (data) {
+      setFollowBtn(data);
+    }
+  }, [data]);
+
+
+
+
+
+  useEffect(() => {
+    let res = follow()
+    console.log(res)
+    if (res === 'fetch error') {
+      console.log(res)
+    }
+  }, [followBtn])
+
+  let btnClass = '';
+  let btnText = '';
+  const status = followBtn; // Initialize `status` after the state has been updated
+
+  console.log("Current status:", status);
+
+  switch (status) {
+    case 'btn-accepted':
+      btnClass = 'btn-none';
+      btnText = 'Follow';
+      break;
+    case 'accepted':
+      btnClass = 'btn-accepted';
+      btnText = 'Following';
+      break;
+    case 'btn-pending':
+      btnClass = 'btn-none';
+      btnText = 'Follow';
+      break;
+    case 'pending':
+      btnClass = 'btn-pending';
+      btnText = 'Pending...';
+      break;
+    case 'btn-none':
+      console.log('enter')
+      btnClass = 'requested';
+      btnText = 'requested';
+      break;
+    case 'to_accept':
+      btnClass = 'to-accept';
+      btnText = 'Accept'
+      break;
+    case 'requested':
+      btnClass = 'requested';
+      btnText = 'Requested'
+      break;
+    case 'none':
+      btnClass = 'btn-none';
+      btnText = 'Follow';
+      break;
+    default:
+      return null;
+  }
+
+  return (
+    <button className={btnClass} onClick={handleFollowing}>
+      {btnText}
+    </button>
+  );
+};
+
 
 const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
   const [homeLogo, setHomeLogo] = useState("");
@@ -19,6 +115,16 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
   const [notificationCount, setNotificationCount] = useState(-1)
 
 
+  const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+
+  useEffect(() => {
+    console.log(messages); // Handle WebSocket messages here if needed
+    if (messages.category==='friend_request') {
+      setNotificationCount(messages.notification_count)
+    } else {
+      setNotificationCount(messages.notification_count)
+    }
+  }, [messages]);
 
 
   useEffect(() => {
@@ -87,15 +193,7 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
   }, [authorizedUser])
 
 
-  // useEffect(() => {
-  //   const notificationValue =
-  //     notificationCount && notificationCount.notification_count > -1
-  //       ? notificationCount.notification_count
-  //       : notificationCount !== -1
-  //         ? notificationCount
-  //         : 0;
-  //   setNotificationCount(notificationValue)
-  // }, [notificationCount])
+
 
   useEffect(() => {
     console.log(notifyChannelCount)
@@ -195,20 +293,15 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
     }
   }
 
-  function friendBtn(data) {
 
-    let friend_btn;
 
-    if (data.friendship_status === 'accepted') {
-      friend_btn = <button className="btn-accepted" >following</button>
-    } else if (data.friendship_status === 'pending') {
-      friend_btn = <button className="btn-pending" >pending...</button>
-    } else if (data.friendship_status === 'none') {
-      friend_btn = <button className="btn-none" >Follow</button>
-    }
 
-    return friend_btn
-  }
+
+
+
+
+
+
 
   const hasUserData = authorizedUser && authorizedUser.user;
 
@@ -256,10 +349,10 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
               <h3>Notifications</h3>
               <div className="notification-count">
                 <p>{notificationCount && notificationCount.notification_count > -1
-        ? notificationCount.notification_count
-        : notificationCount !== -1
-          ? notificationCount
-          : 0}</p>
+                  ? notificationCount.notification_count
+                  : notificationCount !== -1
+                    ? notificationCount
+                    : 0}</p>
               </div>
             </div>
             <div className="profile_side side">
@@ -381,7 +474,9 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
                         {data.user.id === authorizedUser.user.id ? (
                           <></>
                         ) : (
-                          <>{friendBtn(data)}</>
+
+                          <RenderButton data={data.friendship_status} auth_user={authorizedUser.user.id} to_user={data.id} />
+
                         )}
                       </div>
                     </div>
