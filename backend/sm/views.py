@@ -220,15 +220,10 @@ class FriendViewSet(APIView):
     def patch(self, request, *args, **kwargs):
 
         instance = self.get_object()
-        print(
-            FriendAccepted.objects.filter(
-                user=instance.user, of_friend=instance.friend
-            ).exists()
-        )
         if not FriendAccepted.objects.filter(
             user=instance.user, of_friend=instance.friend
         ).exists():
-            print("enter")
+            
             instance.is_accepted=True
             instance.is_pending=False
             
@@ -237,24 +232,34 @@ class FriendViewSet(APIView):
                 serializer.save()
                 print(serializer.data.get("is_accepted"), serializer.validated_data)
                 if serializer.data.get("is_accepted"):
-                    print("pppp")
+                    
                     FriendAccepted.objects.create(
                         user=instance.user, of_friend=instance.friend
                     )
                     FriendAccepted.objects.create(
                         user=instance.friend, of_friend=instance.user
                     )
+
+                    friend = FriendAccepted.objects.get(user=instance.friend, of_friend=instance.user)
+                    like_notification_to_all_friend({"friend_accepted_by":friend}, "friend_accepted")
+
+
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"status": "Friend Exists"})
 
     def delete(self, request):
-        print(request)
         user_id = request.query_params.get("auth_user", "")
         friend_id = request.query_params.get("to_user", "")
-        friend = Friend.objects.filter(user=user_id, friend=friend_id)
+        friend = Friend.objects.filter(user=user_id, friend=friend_id) if Friend.objects.filter(user=user_id, friend=friend_id).exists() else Friend.objects.filter(user=friend_id, friend=user_id) 
+        print(friend)
         if friend.exists():
+            friend_accepted_1 = FriendAccepted.objects.filter(user=user_id, of_friend=friend_id) if FriendAccepted.objects.filter(user=user_id, of_friend=friend_id).exists() else None 
+            friend_accepted_2 = FriendAccepted.objects.filter(user=friend_id, of_friend=user_id) if FriendAccepted.objects.filter(user=friend_id, of_friend=user_id).exists() else None 
+            if friend_accepted_1 and friend_accepted_2:
+                friend_accepted_1[0].delete()
+                friend_accepted_2[0].delete()
             notification = Notification.objects.filter(
                 content_type=ContentType.objects.get_for_model(friend[0]),
                 type_of="friend_request",

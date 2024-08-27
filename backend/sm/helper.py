@@ -38,12 +38,14 @@ def user_that_likes_the_post(post):
 
 
 def like_notification_to_all_friend(request, Type):
-
-    if Type != "friend_request" and Type !="reject_cancel":
+    print(Type)
+    if Type != "friend_request" and Type !="reject_cancel" and Type != 'friend_accepted':
         user_id = request.get("author_id")
         like_user = request.get("like_user")
         post_id = request.get("post_id")
         user = User.objects.get(id=user_id)
+    elif Type == 'friend_accepted':
+        friend_accepted_by_obj = request.get('friend_accepted_by')
     else:
         from_user = request.get("user")
         to_user = request.get("friend")
@@ -215,5 +217,22 @@ def like_notification_to_all_friend(request, Type):
                 "type": "like_notification_message",
                 "category": "reject_cancel",
                 "notification_count": notification_count,
+            },
+        )
+    elif Type.strip().lower() == "friend_accepted":
+        print("ENTER IN ACCEPTANCE")
+        notification_to_user = friend_accepted_by_obj.user.id
+        message = f"{friend_accepted_by_obj.user.first_name} @{friend_accepted_by_obj.user.username} has accepted your follow request"
+        
+        user_profile = UserProfile.objects.get(user=friend_accepted_by_obj.of_friend)
+        group_name = f"user_{user_profile.id}"
+        print(group_name, message)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"{group_name}",
+            {
+                "type": "like_notification_message",
+                "category": "friend_accepted",
+                "message": message,
             },
         )
