@@ -73,7 +73,7 @@ const Post = ({
                     setNotifyChannelCount(messages.notification_count);
                     setTickerActive('ticker-active');
                 }
-            }
+            } 
         }
     }, [messages]);
     
@@ -288,7 +288,7 @@ const Home = ({
     checkAuthAndFetchPosts,
     authorizedUser, setTickerContent,
     setNotifyChannelCount,
-    messages
+    messages, followRequestData, setFollowRequestData
 
 }) => {
     const [readMore, setReadMore] = useState(false);
@@ -296,7 +296,7 @@ const Home = ({
     const [isLoading, setIsLoading] = useState(false);
     const [comments, setComments] = useState([]);
     const [commentId, setCommentId] = useState()
-    const [followRequestData, setFollowRequestData] = useState([])
+    // const [followRequestData, setFollowRequestData] = useState([])
     
     useEffect(()=>{
 
@@ -437,7 +437,7 @@ const Home = ({
             {followRequestData.length > 0 ? (
                 <>
                     {followRequestData.map((data, index) => (
-                    <Friends key={index} data={data} removeFollowRequest={removeFollowRequest} />
+                    <Friends key={index} data={data} removeFollowRequest={removeFollowRequest} authorizedUser={authorizedUser}/>
                     ))}
                 </>
                 ) : (

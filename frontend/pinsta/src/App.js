@@ -19,6 +19,7 @@ function App() {
   const [tickerActive, setTickerActive] = useState('ticker-not-active')
   const [tickerContent, setTickerContent] = useState("")
   const [notifyChannelCount, setNotifyChannelCount] = useState(-1)
+  const [followRequestData, setFollowRequestData] = useState([])
 
   const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
   
@@ -68,7 +69,15 @@ function App() {
 
   return (
     <div className="App">
-      {!hideSidebar && <Sidebar authorizedUser={authorizedUser} notifyChannelCount={notifyChannelCount} messages={messages} />} {/* Render Sidebar only if not on the Auth page */}
+      {!hideSidebar && <Sidebar 
+      authorizedUser={authorizedUser} 
+      notifyChannelCount={notifyChannelCount} 
+      messages={messages} 
+      setTickerActive={setTickerActive}  
+      setTickerContent={setTickerContent}
+      followRequestData={followRequestData}
+      setFollowRequestData={setFollowRequestData}
+      />} {/* Render Sidebar only if not on the Auth page */}
       <Routes>
         {Object.keys(authorizedUser).length > 0 ? (
           <>
@@ -84,6 +93,8 @@ function App() {
                   setTickerContent={setTickerContent}
                   setNotifyChannelCount={setNotifyChannelCount}
                   messages={messages}
+                  followRequestData={followRequestData}
+                  setFollowRequestData={setFollowRequestData}
                 />
               }
             />

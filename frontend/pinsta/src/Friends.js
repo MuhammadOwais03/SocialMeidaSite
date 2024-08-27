@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import defaultImage from './default_image.jpg'
-import {acceptFollow} from './server-requests.js'
+import {acceptFollow, followRequest} from './server-requests.js'
 
-export const Friends = ({data, removeFollowRequest}) => {
+export const Friends = ({data, removeFollowRequest, authorizedUser}) => {
 
 
    
@@ -13,9 +13,24 @@ export const Friends = ({data, removeFollowRequest}) => {
             await acceptFollow(data.id);
 
             // Call removePost to remove this post from the UI
-            removeFollowRequest(data.id);
+            // removeFollowRequest(data.id);
         } catch (error) {
             console.error('Error accepting follow request:', error);
+        } finally {
+            removeFollowRequest(data.id);
+        }
+    };
+    const onRejectHandle = async () => {
+        try {
+            // Execute follow request
+            await followRequest('btn-pending',data.user_profile.id,authorizedUser.user.id );
+
+            // Call removePost to remove this post from the UI
+            // removeFollowRequest(data.id);
+        } catch (error) {
+            console.error('Error accepting follow request:', error);
+        } finally {
+            removeFollowRequest(data.id);
         }
     };
 
@@ -45,7 +60,7 @@ export const Friends = ({data, removeFollowRequest}) => {
                 </div>
             </div>
             <div className="follow-card-body">
-                <button>Reject</button>
+                <button onClick={()=>onRejectHandle()}>Reject</button>
                 <button onClick={()=>onAcceptHandle('accept')}  >Accept</button>
             </div>
         </div>

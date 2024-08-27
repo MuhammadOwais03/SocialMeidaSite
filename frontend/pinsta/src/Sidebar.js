@@ -23,7 +23,14 @@ const RenderButton = ({ data, auth_user, to_user }) => {
 
 
     const newClass = e.target.className;
-    setFollow(newClass)
+    if (newClass==="btn-none") {
+      setFollow(newClass)
+      follow()
+      console.log("in")
+    } else if (newClass==='btn-accepted') {
+      console.log(follow())
+      console.log("in")
+    }
 
     console.log("Button class set to:", newClass);
   }
@@ -38,13 +45,13 @@ const RenderButton = ({ data, auth_user, to_user }) => {
 
 
 
-  useEffect(() => {
-    let res = follow()
-    console.log(res)
-    if (res === 'fetch error') {
-      console.log(res)
-    }
-  }, [followBtn])
+  // useEffect(() => {
+  //   let res = follow()
+  //   console.log(res)
+  //   if (res === 'fetch error') {
+  //     console.log(res)
+  //   }
+  // }, [followBtn])
 
   let btnClass = '';
   let btnText = '';
@@ -101,7 +108,11 @@ const RenderButton = ({ data, auth_user, to_user }) => {
 };
 
 
-const Sidebar = ({ authorizedUser, notifyChannelCount, messages }) => {
+const Sidebar = ({ authorizedUser, 
+  notifyChannelCount, messages, 
+  setTickerActive, setTickerContent, 
+  followRequestData, setFollowRequestData 
+}) => {
   const [homeLogo, setHomeLogo] = useState("");
   const [searchLogo, setSearchLogo] = useState("");
   const [msgLogo, setMsgLogo] = useState("");
@@ -122,11 +133,18 @@ const Sidebar = ({ authorizedUser, notifyChannelCount, messages }) => {
 
   useEffect(() => {
     console.log(messages); // Handle WebSocket messages here if needed
-    if (!messages===undefined){
+    if (messages){
 
       if (messages.category==='friend_request') {
         setNotificationCount(messages.notification_count)
-      } else {
+        setTickerContent(messages.message);
+        setFollowRequestData(prevFollowRequestData => [...prevFollowRequestData, messages.data])
+        setTickerActive('ticker-active');
+      }else if (messages.category==='friend_accepted'){
+        console.log("ENTER")
+        setTickerContent(messages.message);
+        setTickerActive('ticker-active');
+    }  else {
         setNotificationCount(messages.notification_count)
       }
     }
@@ -368,7 +386,7 @@ const Sidebar = ({ authorizedUser, notifyChannelCount, messages }) => {
                     src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${authorizedUser.profile_picture}` : 'default_profile_picture_url'}
                     alt="Profile"
                   />
-                  <h3>{authorizedUser.user.username}</h3>
+                  <h3>{authorizedUser.user.username}  {authorizedUser.user.id}</h3>
                 </>
               ) : (
                 <>

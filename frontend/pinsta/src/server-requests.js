@@ -320,9 +320,9 @@ export async function followRequest(type, auth_user, to_user) {
 
     console.log(type)
 
-    if (type==='btn-none') {
+    if (type==='btn-none' || type==='none') {
         method="POST"
-    } else if (type==='btn-pending') {
+    } else if (type==='btn-pending' || type==='accepted') {
         method="DELETE"
     }
 
