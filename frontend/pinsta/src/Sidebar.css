@@ -329,6 +329,19 @@ i, svg {
     font-style: italic;
 }
 
+
+.friend-content button:disabled {
+    background-color: #dbdbdb;
+    padding: 1rem 1rem;
+    color: black;
+    font-size: 15px;
+    text-transform: uppercase;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    cursor:not-allowed;
+}
+
 .friend-content .btn-accepted, 
 .friend-content .btn-none {
     background-color: #1877f2;
@@ -423,3 +436,5 @@ i, svg {
     align-items: center;
     justify-content: center;
 }
+
+

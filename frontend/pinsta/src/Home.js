@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react';
-import { LikePostRequest, get_token, fetchingCommentPost, AddComment } from './server-requests';
+import { LikePostRequest, get_token, fetchingCommentPost, AddComment, get_all_friends_request, followRequest } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
 import useWebSocket from './useWebSockets.js';
+import { Friends } from './Friends.js';
 
 
 function timeSince(dateString) {
@@ -36,7 +37,7 @@ const Post = ({
     // socket,
     setTickerActive,
     setTickerContent, setCommentId,
-    setNotifyChannelCount
+    setNotifyChannelCount, messages
 }) => {
 
 //     const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/notifications/?token=${get_token('accessToken')}`);
@@ -52,11 +53,13 @@ const Post = ({
     const [isLikeAuth, setIsLikeAuth] = useState(false);
     const [addComment, setAddComment] = useState("")
 
-    const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+    // const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
 
     useEffect(() => {
-        console.log(messages); // Handle WebSocket messages here if needed
-                 if (messages.category === 'like_post' || messages.category === 'dislike') {
+        if (messages) { // Check if messages is defined
+            console.log('Received message:', messages); // Debugging output
+    
+            if (messages.category === 'like_post' || messages.category === 'dislike') {
                 if (messages.post_id === post.id) {
                     setLikesCount(messages.like_count); 
                     setTickerContent(messages.message);
@@ -71,50 +74,9 @@ const Post = ({
                     setTickerActive('ticker-active');
                 }
             }
+        }
     }, [messages]);
-
-    //Like Notification Message
-    // useEffect(() => {
-    //     if (!socket) return; // Exit if socket is not initialized
     
-    //     const handleSocketMessage = (e) => {
-    //         const data = JSON.parse(e.data);
-    //         console.log(data, post.id);
-    
-    //         if (data.category === 'like_post' || data.category === 'dislike') {
-    //             if (data.post_id === post.id) {
-    //                 setLikesCount(data.like_count); 
-    //                 setTickerContent(data.message);
-    //                 setNotifyChannelCount(data.notification_count);
-    //                 setTickerActive('ticker-active');
-    //             }
-    //         } else if (data.category === 'comment') {
-    //             if (data.post === post.id) {
-    //                 setCommentCount(data.comment_count);
-    //                 setTickerContent(data.message);
-    //                 setNotifyChannelCount(data.notification_count);
-    //                 setTickerActive('ticker-active');
-    //             }
-    //         } else if (data.category === 'friend_request') {
-    //             console.log("Friend request received");
-    //             // Handle friend request
-    //         }
-    //     };
-    
-    //     socket.addEventListener('message', handleSocketMessage);
-    
-    //     return () => {
-    //         socket.removeEventListener('message', handleSocketMessage);
-    //     };
-    // }, [socket, post.id]);
-   
-    
-
-
-
-   
-
-
 
     useEffect(() => {
         const userHasLiked = likeUsers.some(obj => obj.like_by === authorizedUser.user.id);
@@ -122,6 +84,9 @@ const Post = ({
             setIsLikeAuth(true);
         }
     }, [likeUsers, authorizedUser]);
+
+
+    
 
     const handleLike = async () => {
         const likeAction = isLikeAuth ? "-" : "+";
@@ -322,7 +287,8 @@ const Home = ({
     
     checkAuthAndFetchPosts,
     authorizedUser, setTickerContent,
-    setNotifyChannelCount
+    setNotifyChannelCount,
+    messages
 
 }) => {
     const [readMore, setReadMore] = useState(false);
@@ -330,74 +296,8 @@ const Home = ({
     const [isLoading, setIsLoading] = useState(false);
     const [comments, setComments] = useState([]);
     const [commentId, setCommentId] = useState()
+    const [followRequestData, setFollowRequestData] = useState([])
     
-    
-    
-
-    // // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-    // const socket = useMemo(() => {
-    //     return new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-    // }, []); 
-
-    // const commentSocket = useMemo(()=>{
-    //     return new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`)
-    // })
-
-    // useEffect(()=>{
-        
-
-        
-
-    //     socket.onopen = function(e) {
-    //         console.log('Like WebSocket connection opened');
-    //     };
-
-        
-
-    //     socket.onclose = function(e) {
-    //         console.log('Like WebSocket connection closed', e);
-    //     };
-    //     socket.onerror = (error) => {
-    //         console.error('Like WebSocket error:', error);
-    //     };
-
-    //     commentSocket.onopen = function(e) {
-    //         console.log('Comment notification opened')
-    //     }
-
-    //     commentSocket.onclose = function(e) {
-    //         console.log('Comment WebSocket connection closed');
-    //     };
-
-    //     commentSocket.onerror = (error) => {
-    //         console.error('Comment WebSocket error:', error);
-    //     };
-    // }, [socket, commentSocket])
-
-    // const socket = useMemo(() => {
-    //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-    //     ws.onopen = () => console.log('Like WebSocket connection opened');
-    //     ws.onclose = (e) => console.log('Like WebSocket connection closed', e);
-    //     ws.onerror = (error) => console.error('Like WebSocket error:', error);
-    //     return ws;
-    // }, []);
-
-    // // const commentSocket = useMemo(() => {
-    // //     const ws = new WebSocket(`ws://127.0.0.1:8000/ws/comment-notification/?token=${get_token('accessToken')}`);
-    // //     ws.onopen = () => console.log('Comment WebSocket connection opened');
-    // //     ws.onclose = (e) => console.log('Comment WebSocket connection closed', e);
-    // //     ws.onerror = (error) => console.error('Comment WebSocket error:', error);
-    // //     return ws;
-    // // }, []);
-
-    // useEffect(() => {
-    //     // Cleanup on component unmount
-    //     return () => {
-    //         if (socket.readyState === WebSocket.OPEN) socket.close();
-    //         // if (commentSocket.readyState === WebSocket.OPEN) commentSocket.close();
-    //     };
-    // }, [socket]);
-
     useEffect(()=>{
 
         async function getComment() {
@@ -425,7 +325,9 @@ const Home = ({
 
     }, [commentId])
         
-
+    const removeFollowRequest = (followID) => {
+        setFollowRequestData(prevFollowRequestData => prevFollowRequestData.filter(data => data.id !== followID));
+    };
         
 
     useEffect(() => {
@@ -441,11 +343,43 @@ const Home = ({
                 console.error('Error fetching data:', error);
             } finally {
                 setIsLoading(false);
+                console.log(authorizedUser)
             }
         };
+        const fetchRequest = async ()=>{
+            setIsLoading(true);
+            try {
+                const response = await get_all_friends_request(authorizedUser.user.id);
+                // Handle the response, e.g., set the posts data state here
+                setFollowRequestData(response)
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setIsLoading(false);
+                console.log(followRequestData)
+            }
+        }
+
+        
     
         fetchData();
+        fetchRequest()
+        console.log(authorizedUser)
     }, []);
+
+    // useEffect(()=>{
+    //     const fetchRequest = async ()=>{
+    //         setIsLoading(true);
+    //         try {
+    //             const response = await get_all_friends_request(authorizedUser.user.id);
+    //             // Handle the response, e.g., set the posts data state here
+    //         } catch (error) {
+    //             console.error('Error fetching data:', error);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     }
+    // },[authorizedUser])
     
 
     
@@ -481,6 +415,7 @@ const Home = ({
                             setTickerContent={setTickerContent}
                             setCommentId={setCommentId}
                             setNotifyChannelCount={setNotifyChannelCount}
+                            messages={messages}
                             
                            
                         />
@@ -497,6 +432,18 @@ const Home = ({
                 <div className='cut' onClick={() => setClose(close === "comment-active" ? "comment-not-active" : "comment-active")}>
                     <i className="fa-solid fa-x"></i>
                 </div>
+            </div>
+            <div className="follow_container">
+            {followRequestData.length > 0 ? (
+                <>
+                    {followRequestData.map((data, index) => (
+                    <Friends key={index} data={data} removeFollowRequest={removeFollowRequest} />
+                    ))}
+                </>
+                ) : (
+                ""
+            )}
+                    
             </div>
         </div>
     );

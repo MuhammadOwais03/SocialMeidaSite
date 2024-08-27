@@ -48,6 +48,7 @@ const RenderButton = ({ data, auth_user, to_user }) => {
 
   let btnClass = '';
   let btnText = '';
+  let isDisabled=false;
   const status = followBtn; // Initialize `status` after the state has been updated
 
   console.log("Current status:", status);
@@ -70,17 +71,19 @@ const RenderButton = ({ data, auth_user, to_user }) => {
       btnText = 'Pending...';
       break;
     case 'btn-none':
-      console.log('enter')
       btnClass = 'requested';
       btnText = 'requested';
+      isDisabled=true;
       break;
     case 'to_accept':
       btnClass = 'to-accept';
-      btnText = 'Accept'
+      btnText = 'To Accept'
+      isDisabled=true;
       break;
     case 'requested':
       btnClass = 'requested';
       btnText = 'Requested'
+      isDisabled=true;
       break;
     case 'none':
       btnClass = 'btn-none';
@@ -91,14 +94,14 @@ const RenderButton = ({ data, auth_user, to_user }) => {
   }
 
   return (
-    <button className={btnClass} onClick={handleFollowing}>
+    <button className={btnClass} onClick={handleFollowing} disabled={isDisabled}>
       {btnText}
     </button>
   );
 };
 
 
-const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
+const Sidebar = ({ authorizedUser, notifyChannelCount, messages }) => {
   const [homeLogo, setHomeLogo] = useState("");
   const [searchLogo, setSearchLogo] = useState("");
   const [msgLogo, setMsgLogo] = useState("");
@@ -115,14 +118,17 @@ const Sidebar = ({ authorizedUser, notifyChannelCount }) => {
   const [notificationCount, setNotificationCount] = useState(-1)
 
 
-  const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+  // const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
 
   useEffect(() => {
     console.log(messages); // Handle WebSocket messages here if needed
-    if (messages.category==='friend_request') {
-      setNotificationCount(messages.notification_count)
-    } else {
-      setNotificationCount(messages.notification_count)
+    if (!messages===undefined){
+
+      if (messages.category==='friend_request') {
+        setNotificationCount(messages.notification_count)
+      } else {
+        setNotificationCount(messages.notification_count)
+      }
     }
   }, [messages]);
 

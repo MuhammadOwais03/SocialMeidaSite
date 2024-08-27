@@ -374,3 +374,50 @@ export async function followRequest(type, auth_user, to_user) {
         return 'Fetch error';
     }
 }
+
+
+export async function get_all_friends_request(auth_user) {
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}`, 
+        {
+            method:"GET",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}`
+            }
+        }
+
+    )
+
+    if (!response.ok) {
+        // console.error(`Network response was not ok: ${response.statusText}`);
+        return 'Network not Ok';
+    }
+
+    const result = await response.json();
+    console.log('friend-request:', result);
+    return result;
+}
+
+
+
+export async function acceptFollow(instance_id) {
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/${instance_id}`, 
+        {
+            method:"PATCH",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}`
+            }
+        }
+
+    )
+
+    if (!response.ok) {
+        // console.error(`Network response was not ok: ${response.statusText}`);
+        return 'Network not Ok';
+    }
+
+    const result = await response.json();
+    console.log('friend-request:', result);
+    return result;   
+}
