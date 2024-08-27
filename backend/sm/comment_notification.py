@@ -17,23 +17,22 @@ def comment_notification_to_all_friends(post, author, comment_author):
 
     comment_count = Comment.objects.filter(post=post.id).count()
 
-    
-    notification = Notification(
-            to_user=author,
-            by_user=comment_author,
-            content_type=ContentType.objects.get_for_model(post),
-            object_id=post.id,
-            message=message,
-            type_of='comment'
-        )
-    notification.save()
-    logger.info(f"Notification created for post ID {post.id}")
 
     if friends:
         channel_layer = get_channel_layer()
         for friend in friends:
             try:
                 user_obj = User.objects.get(id=friend)
+                if comment_author.id != user_obj.id:
+                    notification = Notification(
+                            to_user=user_obj,
+                            by_user=comment_author,
+                            content_type=ContentType.objects.get_for_model(post),
+                            object_id=post.id,
+                            message=message,
+                            type_of='comment'
+                        )
+                    notification.save()
                 notification_count = Notification.objects.filter(to_user=user_obj, is_seen=False).count()
                 if comment_author.id != friend:
                     group_name = f"user_{friend}"

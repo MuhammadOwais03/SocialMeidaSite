@@ -54,23 +54,6 @@ def like_notification_to_all_friend(request, Type):
         post = Post.objects.get(id=post_id)
         message = f"{like_user.username} like {post.author.username} '{post.caption}'"
 
-        if not Notification.objects.filter(
-            to_user=user,
-            by_user=like_user,
-            content_type=ContentType.objects.get_for_model(post),
-            object_id=post.id,
-            type_of="like",
-        ).exists():
-            # Create and save a new notification
-            notification = Notification(
-                to_user=user,
-                by_user=like_user,
-                content_type=ContentType.objects.get_for_model(post),
-                object_id=post.id,
-                message=message,
-                type_of="like",
-            )
-            notification.save()
 
         print(user_id, "in friend")
         friends = FriendAccepted.objects.filter(user=user_id).values_list(
@@ -90,6 +73,23 @@ def like_notification_to_all_friend(request, Type):
             for friend in friends:
                 if friend != like_user.id:
                     user_obj = User.objects.get(id=friend)
+                    if not Notification.objects.filter(
+                        to_user=user_obj,
+                        by_user=like_user,
+                        content_type=ContentType.objects.get_for_model(post),
+                        object_id=post.id,
+                        type_of="like",
+                    ).exists() and like_user.id != user_obj.id:
+                        
+                        notification = Notification(
+                            to_user=user_obj,
+                            by_user=like_user,
+                            content_type=ContentType.objects.get_for_model(post),
+                            object_id=post.id,
+                            message=message,
+                            type_of="like",
+                        )
+                        notification.save()
                     notification_count = Notification.objects.filter(
                         to_user=user_obj, is_seen=False
                     ).count()
@@ -134,7 +134,7 @@ def like_notification_to_all_friend(request, Type):
                 if friend != like_user:
                     user_obj = User.objects.get(id=friend)
                     notification = Notification.objects.filter(
-                        by_user=dislike_user.id,
+                        by_user=dislike_user,
                         to_user=user_obj,
                         content_type=ContentType.objects.get_for_model(post),
                         type_of="like",

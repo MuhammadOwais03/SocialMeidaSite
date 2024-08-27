@@ -198,7 +198,12 @@ class FriendViewSet(APIView):
             raise Http404
 
     def get(self, request, *args, **kwargs):
-        friend_objs = Friend.objects.all()
+        auth_user = request.query_params.get("auth_user", "")
+        if not auth_user:
+            friend_objs = Friend.objects.all()
+            serializer = FriendSerializer(friend_objs, many=True)
+            return Response(serializer.data)
+        friend_objs = Friend.objects.filter(friend=auth_user, is_pending=True)
         serializer = FriendSerializer(friend_objs, many=True)
         return Response(serializer.data)
 
@@ -223,10 +228,16 @@ class FriendViewSet(APIView):
         if not FriendAccepted.objects.filter(
             user=instance.user, of_friend=instance.friend
         ).exists():
+            print("enter")
+            instance.is_accepted=True
+            instance.is_pending=False
+            
             serializer = FriendSerializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                if serializer.validated_data.get("is_accepted"):
+                print(serializer.data.get("is_accepted"), serializer.validated_data)
+                if serializer.data.get("is_accepted"):
+                    print("pppp")
                     FriendAccepted.objects.create(
                         user=instance.user, of_friend=instance.friend
                     )
@@ -245,14 +256,19 @@ class FriendViewSet(APIView):
         friend = Friend.objects.filter(user=user_id, friend=friend_id)
         if friend.exists():
             notification = Notification.objects.filter(
-                    content_type=ContentType.objects.get_for_model(friend[0]),
-                    type_of="friend_request",
-                    )
+                content_type=ContentType.objects.get_for_model(friend[0]),
+                type_of="friend_request",
+            )
             if notification.exists():
                 notification[0].delete()
             receiver_user = User.objects.get(id=friend_id)
-            notification_count = Notification.objects.filter(to_user=receiver_user).count()
-            like_notification_to_all_friend({"notification_count":notification_count, 'receiver':friend_id}, "reject_cancel")
+            notification_count = Notification.objects.filter(
+                to_user=receiver_user
+            ).count()
+            like_notification_to_all_friend(
+                {"notification_count": notification_count, "receiver": friend_id},
+                "reject_cancel",
+            )
             friend[0].delete()
             return Response({"status", "successfully delete"})
         return Response({"status", "unsuccessfull to delete"})
@@ -467,10 +483,20 @@ class SearchUserProfile(viewsets.ModelViewSet):
                 user_data["friendship_status"] = "accepted"
             elif user_id in pending_requests_set:
                 user_data["friendship_status"] = "pending"
-                if user_id != request.user.id and not Friend.objects.filter(user=request.user.id, friend=user_id).exists():
-                     user_data["friendship_status"] = 'to_accept'
-                elif user_id != request.user.id and  Friend.objects.filter(user=request.user.id, friend=user_id).exists():
-                     user_data["friendship_status"] = 'requested'
+                if (
+                    user_id != request.user.id
+                    and not Friend.objects.filter(
+                        user=request.user.id, friend=user_id
+                    ).exists()
+                ):
+                    user_data["friendship_status"] = "to_accept"
+                elif (
+                    user_id != request.user.id
+                    and Friend.objects.filter(
+                        user=request.user.id, friend=user_id
+                    ).exists()
+                ):
+                    user_data["friendship_status"] = "requested"
             else:
                 user_data["friendship_status"] = "none"
 
