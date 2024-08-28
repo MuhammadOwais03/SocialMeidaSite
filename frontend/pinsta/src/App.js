@@ -7,6 +7,8 @@ import Auth from './auth.js';
 import Sidebar from './Sidebar.js';
 import Home from './Home.js';
 import NotificationTicker from './NotificationTicker.js';
+import { HomePost } from './HomePost.js';
+import { UserProfile } from './UserProfile.js';
 
 import useWebSocket from './useWebSockets.js';
 
@@ -97,6 +99,32 @@ function App() {
                   setFollowRequestData={setFollowRequestData}
                 />
               }
+            />
+            <Route 
+              path='/:postID'
+              element={
+                <HomePost
+                setTickerActive={setTickerActive}
+                checkAuthAndFetchPosts={checkAuthAndFetchPosts}
+                authorizedUser={authorizedUser}
+                setTickerContent={setTickerContent}
+                setNotifyChannelCount={setNotifyChannelCount}
+                messages={messages}
+                followRequestData={followRequestData}
+                setFollowRequestData={setFollowRequestData}
+                />
+              }
+            
+            />
+            <Route
+              path='/user-profile/:id'
+              element={
+                <UserProfile
+                
+                  authorizedUser={authorizedUser}
+                />
+              }
+            
             />
             <Route
               path="/auth"

@@ -1,0 +1,126 @@
+.user-profile-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    /* width: 100%; */
+    /* background-color: saddlebrown; */
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 20%;
+    width: 80%;
+}
+
+
+.user-profile-page-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 90%;
+    /* background-color: aliceblue; */
+    border-bottom: 2px solid #ededed;
+    padding-bottom: 2rem;
+    margin-bottom: 0;
+}
+
+.user-profile-page-header-img {
+    width: 200px;
+    height: 200px;
+    /* background-color: cadetblue; */
+    border-radius: 50%;
+}
+
+.user-profile-page-header-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.user-profile-page-header-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.2rem;
+    width: 30%;
+    /* background-color: saddlebrown; */
+    padding: 1rem 3rem;
+}
+
+.user-profile-page-header-body-header button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.user-profile-page-header-body-header,
+.user-profile-page-header-body-post-numbers {
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    column-gap: 2rem;
+    align-items: center;
+}
+
+.user-profile-page-header-body-names h4 {
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+}
+
+.user-profile-page-header-body-names p {
+    padding: 0.2rem 0.6rem;
+    background-color: #dbdbdb;
+    width: 100px;
+    /* text-align: center; */
+    border-radius: 20px;
+}
+
+.user-profile-navigation {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    gap: 3rem;
+    margin-top: -32px;
+
+}
+
+.user-profile-navigation * {
+    cursor: pointer;
+    width: 50px;
+    /* border-top: 1px solid black; */
+    padding-top: 0.7rem;
+    text-align: center;
+}
+
+.Post,
+.Saved {
+    border-top: 1px solid black;
+}
+
+
+.all-post-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.1rem;
+    align-items: center;
+    justify-content: flex-start;
+    width: 90%;
+    margin-left: 10rem;
+}
+
+.all-post-container .post-img {
+    width: 300px;
+    height: 300px;
+}
+
+.all-post-container .post-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}

@@ -139,7 +139,30 @@ export async function loginAuth(username, password) {
     }
 }
 
+export async function fetchPost(postID) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/post/${postID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${get_token('accessToken')}`
+            }
+        });
 
+        if (!response.ok) {
+            console.error(`Failed to fetch post with ID ${postID}: ${response.status}`);
+            return null; // Explicitly return null or some error value
+        }
+
+        const responseData = await response.json();
+        console.log("Fetched post data:", responseData); // Log the data
+        return responseData;
+
+    } catch (error) {
+        console.error("Error occurred while fetching post:", error);
+        return null; // Handle fetch error by returning null or some error value
+    }
+}
 
 export async function allPosts() {
 
@@ -213,7 +236,7 @@ export async function LikePostRequest(post, likeType, authUserId) {
 
 
 export async function fetchingCommentPost(post_id) {
-    
+
     const response = await fetch(`http://127.0.0.1:8000/api/comment?post=${post_id}`, {
         method: "GET",
         headers: {
@@ -242,9 +265,9 @@ export async function AddComment(content, comment_author, post) {
             'Authorization': `Bearer ${get_token('accessToken')}`
         },
         body: JSON.stringify({
-            "content":content,
-            "comment_author":comment_author,
-            "post":post
+            "content": content,
+            "comment_author": comment_author,
+            "post": post
         })
     })
 
@@ -266,10 +289,10 @@ export async function SearchUsers(name) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${get_token('accessToken')}`
         },
-        
+
     })
 
-    
+
     if (!response.ok) {
         return 'Network not Ok'
     }
@@ -306,68 +329,68 @@ export async function getNotification(user_id, type) {
 
 
 export async function followRequest(type, auth_user, to_user) {
-    
+
 
     let data;
 
-    
+
 
     data = {
-        "user":auth_user,
-        "friend":to_user
+        "user": auth_user,
+        "friend": to_user
     }
     let method;
 
     console.log(type)
 
-    if (type==='btn-none' || type==='none') {
-        method="POST"
-    } else if (type==='btn-pending' || type==='accepted') {
-        method="DELETE"
+    if (type === 'btn-none' || type === 'none') {
+        method = "POST"
+    } else if (type === 'btn-pending' || type === 'accepted') {
+        method = "DELETE"
     }
 
     let response;
     try {
-        if (method==="POST") {
+        if (method === "POST") {
 
-             response = await fetch(`http://127.0.0.1:8000/api/friend/`, {
-                method:"POST",
+            response = await fetch(`http://127.0.0.1:8000/api/friend/`, {
+                method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${get_token('accessToken')}`
                 },
-                body:JSON.stringify(data)
+                body: JSON.stringify(data)
             });
             if (!response.ok) {
                 console.error(`Network response was not ok: ${response.statusText}`);
                 return 'Network not Ok';
             }
-    
+
             const result = await response.json();
             console.log('friend-request:', result);
             return result;
         }
 
-        else if (method==='DELETE') {
-             response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}&to_user=${to_user}`, {
-                method:"DELETE",
+        else if (method === 'DELETE') {
+            response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}&to_user=${to_user}`, {
+                method: "DELETE",
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${get_token('accessToken')}`
                 },
-                
+
             });
             if (!response.ok) {
                 // console.error(`Network response was not ok: ${response.statusText}`);
                 return 'Network not Ok';
             }
-    
+
             const result = await response.json();
             console.log('friend-request:', result);
             return result;
         }
 
-       
+
 
     } catch (error) {
         // console.error('Fetch error:', error);
@@ -377,9 +400,9 @@ export async function followRequest(type, auth_user, to_user) {
 
 
 export async function get_all_friends_request(auth_user) {
-    let response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}`, 
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}`,
         {
-            method:"GET",
+            method: "GET",
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${get_token('accessToken')}`
@@ -401,9 +424,9 @@ export async function get_all_friends_request(auth_user) {
 
 
 export async function acceptFollow(instance_id) {
-    let response = await fetch(`http://127.0.0.1:8000/api/friend/${instance_id}`, 
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/${instance_id}`,
         {
-            method:"PATCH",
+            method: "PATCH",
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${get_token('accessToken')}`
@@ -419,5 +442,57 @@ export async function acceptFollow(instance_id) {
 
     const result = await response.json();
     console.log('friend-request:', result);
-    return result;   
+    return result;
+}
+
+
+export async function get_friend_status(auth_id, req_id) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${get_token('accessToken')}`
+    };
+    console.log(auth_id, parseInt(req_id))
+    try {
+        const response1 = await fetch(`http://127.0.0.1:8000/api/search/?auth_id=${auth_id}&req_id=${parseInt(req_id)}`, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!response1.ok) {
+            throw new Error(`Error fetching friend status: ${response1.status} ${response1.statusText}`);
+        }
+
+        const result1 = await response1.json();
+        console.log(result1);
+
+        const response2 = await fetch(`http://127.0.0.1:8000/api/user-info/${req_id}`, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!response2.ok) {
+            throw new Error(`Error fetching user info: ${response2.status} ${response2.statusText}`);
+        }
+
+        const result2 = await response2.json();
+        console.log(result2);
+        const response3 = await fetch(`http://127.0.0.1:8000/api/post/?req_id=${req_id}`, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!response3.ok) {
+            throw new Error(`Error fetching user info: ${response3.status} ${response3.statusText}`);
+        }
+
+        const result3 = await response3.json();
+        console.log(result3);
+
+        // Return the results or combine them as needed
+        return { friendStatus: result1, userInfo: result2, 'post':result3 };
+
+    } catch (error) {
+        console.error(`Network request failed: ${error.message}`);
+        return null; // Return null or an appropriate fallback value
+    }
 }
