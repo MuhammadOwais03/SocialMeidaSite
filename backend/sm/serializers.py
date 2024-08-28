@@ -152,6 +152,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     by_user = UserSerializer()
     content_object = serializers.SerializerMethodField()
     profile_picture = serializers.SerializerMethodField()
+    link_to_post = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
@@ -177,3 +178,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             )
         except UserProfile.DoesNotExist:
             return None
+    
+    def get_link_to_post(self, obj):
+        if not  'friend' in obj.type_of.lower():
+        
+            return 'link_to_post'
+        

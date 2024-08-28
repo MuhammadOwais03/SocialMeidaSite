@@ -223,16 +223,16 @@ class FriendViewSet(APIView):
         if not FriendAccepted.objects.filter(
             user=instance.user, of_friend=instance.friend
         ).exists():
-            
-            instance.is_accepted=True
-            instance.is_pending=False
-            
+
+            instance.is_accepted = True
+            instance.is_pending = False
+
             serializer = FriendSerializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 print(serializer.data.get("is_accepted"), serializer.validated_data)
                 if serializer.data.get("is_accepted"):
-                    
+
                     FriendAccepted.objects.create(
                         user=instance.user, of_friend=instance.friend
                     )
@@ -240,9 +240,12 @@ class FriendViewSet(APIView):
                         user=instance.friend, of_friend=instance.user
                     )
 
-                    friend = FriendAccepted.objects.get(user=instance.friend, of_friend=instance.user)
-                    like_notification_to_all_friend({"friend_accepted_by":friend}, "friend_accepted")
-
+                    friend = FriendAccepted.objects.get(
+                        user=instance.friend, of_friend=instance.user
+                    )
+                    like_notification_to_all_friend(
+                        {"friend_accepted_by": friend}, "friend_accepted"
+                    )
 
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -252,11 +255,27 @@ class FriendViewSet(APIView):
     def delete(self, request):
         user_id = request.query_params.get("auth_user", "")
         friend_id = request.query_params.get("to_user", "")
-        friend = Friend.objects.filter(user=user_id, friend=friend_id) if Friend.objects.filter(user=user_id, friend=friend_id).exists() else Friend.objects.filter(user=friend_id, friend=user_id) 
+        friend = (
+            Friend.objects.filter(user=user_id, friend=friend_id)
+            if Friend.objects.filter(user=user_id, friend=friend_id).exists()
+            else Friend.objects.filter(user=friend_id, friend=user_id)
+        )
         print(friend)
         if friend.exists():
-            friend_accepted_1 = FriendAccepted.objects.filter(user=user_id, of_friend=friend_id) if FriendAccepted.objects.filter(user=user_id, of_friend=friend_id).exists() else None 
-            friend_accepted_2 = FriendAccepted.objects.filter(user=friend_id, of_friend=user_id) if FriendAccepted.objects.filter(user=friend_id, of_friend=user_id).exists() else None 
+            friend_accepted_1 = (
+                FriendAccepted.objects.filter(user=user_id, of_friend=friend_id)
+                if FriendAccepted.objects.filter(
+                    user=user_id, of_friend=friend_id
+                ).exists()
+                else None
+            )
+            friend_accepted_2 = (
+                FriendAccepted.objects.filter(user=friend_id, of_friend=user_id)
+                if FriendAccepted.objects.filter(
+                    user=friend_id, of_friend=user_id
+                ).exists()
+                else None
+            )
             if friend_accepted_1 and friend_accepted_2:
                 friend_accepted_1[0].delete()
                 friend_accepted_2[0].delete()
@@ -300,6 +319,24 @@ class PostViewSet(viewsets.ModelViewSet):
 
         # Sort posts by created_at in descending order (most recent first)
         return queryset
+
+    def list(self, request):
+        req_id = request.query_params.get("req_id", "")
+        if req_id:
+            user = User.objects.get(id=req_id)
+            posts = Post.objects.filter(author=user)
+            print(posts, user)
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data)
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
 
@@ -447,6 +484,28 @@ class SearchUserProfile(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         name = request.query_params.get("name", "")
+        auth_id = request.query_params.get("auth_id", "")
+        req_id = request.query_params.get("req_id", "")
+        print(request)
+
+        if auth_id and req_id:
+            print(auth_id, req_id)
+            auth_user = User.objects.get(id=auth_id)
+            req_user = User.objects.get(id=req_id)
+            print(auth_user, req_user)
+            if Friend.objects.filter(
+                Q(user=auth_user, friend=req_user) | Q(user=req_user, friend=auth_user)
+            ).exists():
+                friend = Friend.objects.get(
+                    Q(user=auth_user, friend=req_user)
+                    | Q(user=req_user, friend=auth_user)
+                )
+                print("ENTER1")
+                serializer = FriendSerializer(friend)
+                return Response(serializer.data)
+            print("ENTER2")
+            return Response({"status": "none"})
+
         user = request.user
         name = "None" if name == "" else name
         # Filter user profiles based on the search term

@@ -14,7 +14,7 @@ router.register(r"post", PostViewSet, basename="post")
 router.register(r"comment", CommentViewSet, basename="comment")
 router.register(r"like", LikeViewSet, basename="like")
 router.register(r"search", SearchUserProfile, basename="search")
-router.register(r'notification', NotificationViewSet, basename='notification') 
+router.register(r"notification", NotificationViewSet, basename="notification")
 # router.register(r'protected', MyProtectedView, basename='protected')
 
 
