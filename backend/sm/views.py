@@ -489,10 +489,19 @@ class SearchUserProfile(viewsets.ModelViewSet):
         print(request)
 
         if auth_id and req_id:
-            print(auth_id, req_id)
+            
             auth_user = User.objects.get(id=auth_id)
             req_user = User.objects.get(id=req_id)
-            print(auth_user, req_user)
+
+            if FriendAccepted.objects.filter(
+                Q(user=auth_user, of_friend=req_user) | Q(user=req_user, of_friend=auth_user)
+            ).exists():
+                print("enter")
+                friend = FriendAccepted.objects.get(user=auth_user, of_friend=req_user)
+                serializer =FriendAcceptedSerializer(friend)
+                return Response(serializer.data)
+
+
             if Friend.objects.filter(
                 Q(user=auth_user, friend=req_user) | Q(user=req_user, friend=auth_user)
             ).exists():
@@ -500,11 +509,11 @@ class SearchUserProfile(viewsets.ModelViewSet):
                     Q(user=auth_user, friend=req_user)
                     | Q(user=req_user, friend=auth_user)
                 )
-                print("ENTER1")
                 serializer = FriendSerializer(friend)
                 return Response(serializer.data)
-            print("ENTER2")
-            return Response({"status": "none"})
+            req_user_profile = UserProfile.objects.get(user=req_user)
+            serializer = UserProfileSerializer(req_user_profile)
+            return Response({"status": "none", "friend_request_profile":serializer.data})
 
         user = request.user
         name = "None" if name == "" else name
