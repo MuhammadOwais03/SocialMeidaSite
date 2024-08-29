@@ -26,12 +26,12 @@ const Home = ({
     const [commentId, setCommentId] = useState()
     // const [followRequestData, setFollowRequestData] = useState([])
     
+    async function getComment() {
+        let get_comment_response = await fetchingCommentPost(commentId);
+        return get_comment_response;
+    }
     useEffect(()=>{
 
-        async function getComment() {
-            let get_comment_response = await fetchingCommentPost(commentId);
-            return get_comment_response;
-        }
         
         if (commentId) {
             getComment().then(
@@ -132,6 +132,7 @@ const Home = ({
                             setCommentId={setCommentId}
                             setNotifyChannelCount={setNotifyChannelCount}
                             messages={messages}
+                            getComment={getComment}
                             
                            
                         />

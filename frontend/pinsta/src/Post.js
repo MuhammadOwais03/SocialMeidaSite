@@ -72,6 +72,7 @@ const Post = ({
                     setTickerActive('ticker-active');
                 }
             } 
+        messages = ""
         }
     }, [messages]);
     
@@ -162,7 +163,7 @@ const Post = ({
     } else if (post.post_type === 'video') {
         mainContent = (
             <video width="750" height="500" controls autoPlay loop>
-                <source src={post.post_image} type="video/mp4" />
+                <source src={post.video_file} type="video/mp4" />
             </video>
         );
         captionContent = (
@@ -234,6 +235,7 @@ const Post = ({
                     <p onClick={() => {
                         setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
                         setCommentId(post.id);
+                        
                     }}>
                         {`View ${commentCount} comments`}
                     </p>

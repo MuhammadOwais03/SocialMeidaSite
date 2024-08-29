@@ -122,6 +122,9 @@ function App() {
                 <UserProfile
                 
                   authorizedUser={authorizedUser}
+                  messages={messages}
+                  setTickerActive={setTickerActive}
+                  setTickerContent={setTickerContent}
                 />
               }
             
