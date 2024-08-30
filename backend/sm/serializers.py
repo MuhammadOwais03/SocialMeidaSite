@@ -52,7 +52,6 @@ class FriendSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         user = attrs.get("user")
         friend = attrs.get("friend")
-        
 
         # Check if the users are already friends
         if (
@@ -66,26 +65,27 @@ class FriendSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Friend request already generated")
 
         return attrs
-    
+
     def get_user_profile(self, obj):
         user = User.objects.get(username=obj.user)
         user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile)
 
         return serializer.data
-    
+
     def get_friend_request_profile(self, obj):
         friend = User.objects.get(username=obj.friend)
         user_profile = UserProfile.objects.get(user=friend)
         serializer = UserProfileSerializer(user_profile)
 
         return serializer.data
-    
+
     def get_followers(self, obj):
         print(obj.friend)
         followers_count = FriendAccepted.objects.filter(Q(user=obj.friend)).count()
         return followers_count
-    
+
+
 class FriendAcceptedSerializer(serializers.ModelSerializer):
 
     user_profile = serializers.SerializerMethodField()
@@ -94,15 +94,15 @@ class FriendAcceptedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FriendAccepted
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def get_user_profile(self, obj):
         user = User.objects.get(username=obj.user)
         user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile)
 
         return serializer.data
-    
+
     def get_friend_request_profile(self, obj):
         friend = User.objects.get(username=obj.of_friend)
         user_profile = UserProfile.objects.get(user=friend)
@@ -214,9 +214,8 @@ class NotificationSerializer(serializers.ModelSerializer):
             )
         except UserProfile.DoesNotExist:
             return None
-    
+
     def get_link_to_post(self, obj):
-        if not  'friend' in obj.type_of.lower():
-        
-            return 'link_to_post'
-        
+        if not "friend" in obj.type_of.lower():
+
+            return "link_to_post"

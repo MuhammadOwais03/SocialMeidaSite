@@ -341,11 +341,31 @@ class PostViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         # print(request.data.get('id'), type(request.data.get('id')), request.data)
-        response = super().create(request, *args, **kwargs)
+        # response = super().create(request, *args, **kwargs)
+        # print(response)
 
-        notification_to_all_friends(response, "post_posted")
+        # # notification_to_all_friends(response, "post_posted")
 
-        return response
+        # return response
+
+        print(request.data)
+
+        user = User.objects.get(id=int(request.data.get("author")))
+        response = Post.objects.create(
+            author=user,
+            caption=request.data.get("caption", ""),
+            post_image=request.data.get("post_image", None),
+            video_file=request.data.get("video_file", None),
+            post_type=request.data.get("post_type"),
+        )
+        serializer = PostSerializer(response)
+        print(serializer.data)
+        # Optionally trigger notifications here
+        like_notification_to_all_friend(
+            {"response": serializer.data, "user": user}, "post_posted"
+        )
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     # List api/post/
     # Reterive   api/post/<id>
@@ -489,18 +509,18 @@ class SearchUserProfile(viewsets.ModelViewSet):
         print(request)
 
         if auth_id and req_id:
-            
+
             auth_user = User.objects.get(id=auth_id)
             req_user = User.objects.get(id=req_id)
 
             if FriendAccepted.objects.filter(
-                Q(user=auth_user, of_friend=req_user) | Q(user=req_user, of_friend=auth_user)
+                Q(user=auth_user, of_friend=req_user)
+                | Q(user=req_user, of_friend=auth_user)
             ).exists():
                 print("enter")
                 friend = FriendAccepted.objects.get(user=auth_user, of_friend=req_user)
-                serializer =FriendAcceptedSerializer(friend)
+                serializer = FriendAcceptedSerializer(friend)
                 return Response(serializer.data)
-
 
             if Friend.objects.filter(
                 Q(user=auth_user, friend=req_user) | Q(user=req_user, friend=auth_user)
@@ -513,7 +533,9 @@ class SearchUserProfile(viewsets.ModelViewSet):
                 return Response(serializer.data)
             req_user_profile = UserProfile.objects.get(user=req_user)
             serializer = UserProfileSerializer(req_user_profile)
-            return Response({"status": "none", "friend_request_profile":serializer.data})
+            return Response(
+                {"status": "none", "friend_request_profile": serializer.data}
+            )
 
         user = request.user
         name = "None" if name == "" else name
@@ -585,13 +607,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         type_ = request.query_params.get("type", "")
         user_id = request.query_params.get("id", "")
-        print(type_)
+        print(type_, user_id)
+        user = User.objects.get(id=user_id)
         if type_.lower() == "content":
 
             notification = Notification.objects.filter(
-                to_user=user_id, is_seen=False
+                Q(to_user=user_id, is_seen=False) | Q(to_user=user, is_seen=False)
             ).order_by("-created_at")
-
+            print(notification)
             if notification.exists():
                 for notify in notification:
                     notify.is_seen = True

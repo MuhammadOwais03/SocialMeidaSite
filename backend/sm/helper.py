@@ -1,7 +1,7 @@
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db.models import Q
-
+import json
 
 from .models import *
 from .serializers import *
@@ -39,13 +39,22 @@ def user_that_likes_the_post(post):
 
 def like_notification_to_all_friend(request, Type):
     print(Type)
-    if Type != "friend_request" and Type !="reject_cancel" and Type != 'friend_accepted':
+    if (
+        Type != "friend_request"
+        and Type != "reject_cancel"
+        and Type != "friend_accepted"
+        and Type != "post_posted"
+    ):
         user_id = request.get("author_id")
         like_user = request.get("like_user")
         post_id = request.get("post_id")
         user = User.objects.get(id=user_id)
-    elif Type == 'friend_accepted':
-        friend_accepted_by_obj = request.get('friend_accepted_by')
+    elif Type == "friend_accepted":
+        friend_accepted_by_obj = request.get("friend_accepted_by")
+    elif Type == "post_posted":
+        user = request.get("user")
+        response = request.get("response")
+
     else:
         from_user = request.get("user")
         to_user = request.get("friend")
@@ -55,7 +64,6 @@ def like_notification_to_all_friend(request, Type):
     if Type.lower() == "like_post":
         post = Post.objects.get(id=post_id)
         message = f"{like_user.username} like {post.author.username} '{post.caption}'"
-
 
         print(user_id, "in friend")
         friends = FriendAccepted.objects.filter(user=user_id).values_list(
@@ -75,14 +83,18 @@ def like_notification_to_all_friend(request, Type):
             for friend in friends:
                 if friend != like_user.id:
                     user_obj = User.objects.get(id=friend)
-                    if not Notification.objects.filter(
-                        to_user=user_obj,
-                        by_user=like_user,
-                        content_type=ContentType.objects.get_for_model(post),
-                        object_id=post.id,
-                        type_of="like",
-                    ).exists() and like_user.id != user_obj.id:
-                        
+                    if (
+                        not Notification.objects.filter(
+                            to_user=user_obj,
+                            by_user=like_user,
+                            content_type=ContentType.objects.get_for_model(post),
+                            object_id=post.id,
+                            type_of="like",
+                            is_seen=False
+                        ).exists()
+                        and like_user.id != user_obj.id
+                    ):
+
                         notification = Notification(
                             to_user=user_obj,
                             by_user=like_user,
@@ -140,6 +152,7 @@ def like_notification_to_all_friend(request, Type):
                         to_user=user_obj,
                         content_type=ContentType.objects.get_for_model(post),
                         type_of="like",
+                        is_seen=False
                     )
                     if notification.exists():
                         notification[0].delete()
@@ -186,6 +199,7 @@ def like_notification_to_all_friend(request, Type):
                 object_id=friend_request.id,
                 message=message,
                 type_of="friend_request",
+                
             )
             notification.save()
 
@@ -223,7 +237,7 @@ def like_notification_to_all_friend(request, Type):
         print("ENTER IN ACCEPTANCE")
         notification_to_user = friend_accepted_by_obj.user.id
         message = f"{friend_accepted_by_obj.user.first_name} @{friend_accepted_by_obj.user.username} has accepted your follow request"
-        
+
         user_profile = UserProfile.objects.get(user=friend_accepted_by_obj.of_friend)
         group_name = f"user_{user_profile.id}"
         print(group_name, message)
@@ -236,3 +250,50 @@ def like_notification_to_all_friend(request, Type):
                 "message": message,
             },
         )
+
+    elif Type.strip().lower() == "post_posted":
+
+        friends = FriendAccepted.objects.filter(user=user).values_list(
+            "of_friend", flat=True
+        )
+
+        print(response, "333")
+        post = Post.objects.filter(author=user).latest("created_at")
+        message = f"{user.username} just posted the post"
+
+        for fr_id in friends:
+            print("POST POSTED")
+            friend_obj = User.objects.get(id=fr_id)
+            notification = Notification.objects.filter(
+                by_user=user,
+                to_user=friend_obj,
+                content_type=ContentType.objects.get_for_model(post),
+                type_of="post_posted",
+                is_seen=False
+            )
+
+            if not notification.exists():
+                notification_friend = Notification.objects.create(
+                    by_user=user,
+                    to_user=friend_obj,
+                    content_type=ContentType.objects.get_for_model(post),
+                    object_id=post.id,
+                    message=message,
+                    type_of="post_posted",
+                )
+
+                notification_friend.save()
+
+            notification_count = Notification.objects.filter(to_user=friend_obj, is_seen = False).count()
+            group_name = f"user_{fr_id}"
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"{group_name}",
+                {
+                    "type": "like_notification_message",
+                    "category": "post_posted",
+                    "message": message,
+                    "response": response,
+                    "notification_count": notification_count,
+                },
+            )

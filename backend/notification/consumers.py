@@ -55,6 +55,7 @@ class LikeNotification(AsyncWebsocketConsumer):
             "post": event.get("post", ""),
             "receiving": event.get("receiving", ""),
             "data": event.get("data", {}),
+            "response":event.get("response", {})
         }
 
         await self.send(text_data=json.dumps(response_data))
