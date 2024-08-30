@@ -11,7 +11,8 @@ import RenderButton from "./RenderButton.js";
 const Sidebar = ({ authorizedUser, 
   notifyChannelCount, messages, 
   setTickerActive, setTickerContent, 
-  followRequestData, setFollowRequestData 
+  followRequestData, setFollowRequestData,
+  create,setCreate 
 }) => {
   const [homeLogo, setHomeLogo] = useState("");
   const [searchLogo, setSearchLogo] = useState("");
@@ -279,7 +280,11 @@ const Sidebar = ({ authorizedUser,
                     : 0}</p>
               </div>
             </div>
-            <div className="profile_side side">
+            <div  className="create-side side" onClick={()=>{setCreate('create-active')}}>
+              <i class="fa-regular fa-square-plus"></i>
+              <h3>Create</h3>
+            </div>
+            <Link to={`/user-profile/${authorizedUser.user.id}`} className="profile_side side">
               {hasUserData ? (
                 <>
                   <img
@@ -294,7 +299,7 @@ const Sidebar = ({ authorizedUser,
                   <h3>Profile</h3>
                 </>
               )}
-            </div>
+            </Link>
           </div>
           <div className="more_side side" onClick={() => setMoreContent(moreContent === 'more-not-active' ? 'more-active' : 'more-not-active')}>
             <box-icon name="menu"></box-icon>

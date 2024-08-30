@@ -143,6 +143,158 @@ a {
 }
 
 
+/* Create Post */
+
+.create-post-container {
+  position: absolute;
+  top: 8%;
+  width: 600px;
+  height: 600px;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  border-radius: 20px;
+}
+
+.create-not-active {
+  display: none;
+}
+.create-active {
+  display: block;
+}
+
+.create-post-container .cut {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+  font-size: 18px;
+}
+.create-post-container .left {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.plus-button {
+  font-size: 24px;
+  width: 50px;
+  height: 50px;
+  background-color: #007bff; /* Adjust the color as needed */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plus-button:hover {
+  background-color: #0056b3; /* Darker shade for hover */
+}
+
+.plus-button:focus {
+  outline: none;
+}
+
+
+.create-post-inside-container{
+  width: 100%;
+  height: 100%;
+  padding: 0.6rem 0;
+}
+
+.create-post-inside-container h3 {
+  text-align: center;
+  width: 100%;
+  border-bottom: 2px solid black;
+  padding-bottom: 2rem;
+}
+
+.create-post-inside-body {
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  /* align-items: center; */
+  width: 94.4%;
+  height: 86%;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: auto;
+}
+
+.create-post-inside-body input[type='text'] {
+  width: 93%;
+  padding: 10px; 
+  box-sizing: border-box; 
+  margin-bottom: 10px; 
+  font-size: 16px; 
+  line-height: 1.5; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  height: 99px;
+}
+
+.plus-button {
+  margin: 0 auto;
+  display: block; /* Center the button */
+}
+
+
+.create-post-inside-body img,
+.create-post-inside-body video {
+  margin-top: 10px;
+  width: 100%;
+  height: 600px; /* Fixed height for previews */
+  object-fit: cover; /* Ensure content fits within the defined dimensions */
+}
 
 
 
+
+
+.file-info {
+  font-size: 14px;
+  color: #333; /* Adjust the color as needed */
+  margin: 0 auto;
+  margin-top: 10px;
+  margin-bottom: 2rem;
+}
+
+.create-post-inside-body::-webkit-scrollbar {
+  display: none;
+}
+
+
+.create-post-inside-body textarea {
+  width: 93%;
+  min-height: 40px; /* Minimum height */
+  height: 300px; /* Maximum height to prevent it from growing too large */
+  margin-bottom: 10px; /* Add spacing below the input */
+  font-size: 16px; /* Adjust font size as needed */
+  line-height: 1.5; /* Adjust line height for better vertical alignment */
+  padding: 10px; /* Add padding for internal spacing */
+  box-sizing: border-box; /* Ensure padding is included in height */
+  /* border: 1px solid #ccc; Border styling */
+  border: none;
+  outline: none;
+  border-radius: 5px; /* Rounded corners */
+  resize: none; /* Disable manual resizing */
+  overflow: hidden; /* Hide scrollbars */
+}
+
+.create-post-inside-body button {
+  background-color: #007bff;
+  margin:auto;
+  border-radius: 10px;
+}
+
+
+.create-post-inside-body button:hover {
+  opacity: 0.8;
+  scale: 1.1;
+}

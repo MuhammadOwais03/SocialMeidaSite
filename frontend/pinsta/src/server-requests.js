@@ -496,3 +496,50 @@ export async function get_friend_status(auth_id, req_id) {
         return null; // Return null or an appropriate fallback value
     }
 }
+
+
+// export async function createPost(author, caption, post_image, video_file, post_type) {
+    
+//     // console.log(formData)
+//     const response = await fetch('http://127.0.0.1:8000/api/post/', {
+//         method: "POST",
+//         headers: {
+//             'Authorization': `Bearer ${get_token('accessToken')}`
+//         },
+//         body: JSON.stringify({
+//             "author":author,
+//             "caption":caption,
+//             "post_image":post_image,
+//             "video_file":video_file,
+//             "post_type":post_type
+//         })
+//     });
+
+//     if (!response.ok) {
+//         throw new Error(`Error creating post: ${response.status} ${response.statusText}`);
+//     }
+
+//     const result = await response.json();
+//     console.log(result);
+
+//     return result;
+// }
+
+
+export async function createPost(formData) {
+    const response = await fetch('http://127.0.0.1:8000/api/post/', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${get_token('accessToken')}`
+            // No need to set 'Content-Type' header when using FormData
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error creating post: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result;
+}

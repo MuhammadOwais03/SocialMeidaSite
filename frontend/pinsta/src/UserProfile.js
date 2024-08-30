@@ -145,8 +145,8 @@ export const UserProfile = ({
                                                 
                                                 <img src={`http://127.0.0.1:8000${p.post_image}`} alt="" />
                                                 :(
-                                                    <video width="750" height="500" controls autoPlay loop>
-                                                        <source src={p.video_file} type="video/mp4" />
+                                                    <video  controls  loop>
+                                                        <source src={`http://127.0.0.1:8000${p.video_file}`} type="video/mp4" />
                                                     </video>
                                                 )}
                                                 

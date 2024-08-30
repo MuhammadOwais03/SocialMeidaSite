@@ -30,6 +30,16 @@ const Home = ({
         let get_comment_response = await fetchingCommentPost(commentId);
         return get_comment_response;
     }
+
+
+    useEffect(()=>{
+        if (messages) {
+            if(messages.category==='post_posted') {
+                setPosts(prevPosts => [messages.response, ...prevPosts])
+            }
+        }
+    }, [messages])
+
     useEffect(()=>{
 
         
@@ -133,6 +143,7 @@ const Home = ({
                             setNotifyChannelCount={setNotifyChannelCount}
                             messages={messages}
                             getComment={getComment}
+                            
                             
                            
                         />

@@ -35,7 +35,8 @@ const Post = ({
     // socket,
     setTickerActive,
     setTickerContent, setCommentId,
-    setNotifyChannelCount, messages
+    setNotifyChannelCount, messages,
+    
 }) => {
 
 //     const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/notifications/?token=${get_token('accessToken')}`);
@@ -71,7 +72,14 @@ const Post = ({
                     setNotifyChannelCount(messages.notification_count);
                     setTickerActive('ticker-active');
                 }
+                
+            } else if (messages.category==='post_posted') {
+                
+                setTickerContent(messages.message);
+                setNotifyChannelCount(messages.notification_count);
+                setTickerActive('ticker-active');
             } 
+
         messages = ""
         }
     }, [messages]);
@@ -133,7 +141,7 @@ const Post = ({
 
     let mainContent, captionContent;
     if (post.post_type === 'image') {
-        mainContent = <img src={post.post_image} alt="" width="750" height="500" />;
+        mainContent = <img src={post.post_image.includes('http')?post.post_image:`http://127.0.0.1:8000${post.post_image}`} alt="" width="750" height="500" />;
         captionContent = (
             <p>
                 {post.caption && (
@@ -162,7 +170,7 @@ const Post = ({
         );
     } else if (post.post_type === 'video') {
         mainContent = (
-            <video width="750" height="500" controls autoPlay loop>
+            <video width="750" height="500" controls  loop>
                 <source src={post.video_file} type="video/mp4" />
             </video>
         );

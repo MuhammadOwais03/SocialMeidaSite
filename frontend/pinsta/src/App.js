@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { checking_token, checkingTokenExpired, allPosts, getUserInfo, get_token } from './server-requests';
 import './App.css';
@@ -9,6 +9,7 @@ import Home from './Home.js';
 import NotificationTicker from './NotificationTicker.js';
 import { HomePost } from './HomePost.js';
 import { UserProfile } from './UserProfile.js';
+import { CreatePost } from './CreatePost.js';
 
 import useWebSocket from './useWebSockets.js';
 
@@ -22,39 +23,40 @@ function App() {
   const [tickerContent, setTickerContent] = useState("")
   const [notifyChannelCount, setNotifyChannelCount] = useState(-1)
   const [followRequestData, setFollowRequestData] = useState([])
+  const [create, setCreate] = useState('create-not-active')
 
   const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
-  
 
-    const checkAuthAndFetchPosts = async () => {
-      try {
-          let token_check = checking_token();
 
-          if (token_check) {
-              const status_code = await checkingTokenExpired();
-              if (status_code === 401) {
-                  window.location.href = '/auth';
-                  return;
-              }
+  const checkAuthAndFetchPosts = async () => {
+    try {
+      let token_check = checking_token();
 
-              const data = await allPosts();
-              setPosts(data);
-              // setIsLoading(true)
-          } else {
-              window.location.href = '/auth';
-          }
-      } catch (error) {
-          console.error("Error checking token status:", error);
-      } finally {
-          // setIsLoading(false);
+      if (token_check) {
+        const status_code = await checkingTokenExpired();
+        if (status_code === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await allPosts();
+        setPosts(data);
+        // setIsLoading(true)
+      } else {
+        window.location.href = '/auth';
       }
+    } catch (error) {
+      console.error("Error checking token status:", error);
+    } finally {
+      // setIsLoading(false);
+    }
   };
 
 
 
-  useEffect(()=>{
-    
-    
+  useEffect(() => {
+
+
 
     async function getUser() {
       let data = await getUserInfo();
@@ -66,20 +68,28 @@ function App() {
 
   }, [])
 
+  
+
 
   // console.log(location.pathname, authorizedUser )
 
   return (
     <div className="App">
-      {!hideSidebar && <Sidebar 
-      authorizedUser={authorizedUser} 
-      notifyChannelCount={notifyChannelCount} 
-      messages={messages} 
-      setTickerActive={setTickerActive}  
-      setTickerContent={setTickerContent}
-      followRequestData={followRequestData}
-      setFollowRequestData={setFollowRequestData}
-      />} {/* Render Sidebar only if not on the Auth page */}
+      {Object.keys(authorizedUser).length > 0 ? (
+    !hideSidebar && <Sidebar
+        authorizedUser={authorizedUser}
+        notifyChannelCount={notifyChannelCount}
+        messages={messages}
+        setTickerActive={setTickerActive}
+        setTickerContent={setTickerContent}
+        followRequestData={followRequestData}
+        setFollowRequestData={setFollowRequestData}
+        create={create}
+        setCreate={setCreate}
+      />
+    ) : (
+      ""
+    )}
       <Routes>
         {Object.keys(authorizedUser).length > 0 ? (
           <>
@@ -100,34 +110,34 @@ function App() {
                 />
               }
             />
-            <Route 
+            <Route
               path='/:postID'
               element={
                 <HomePost
-                setTickerActive={setTickerActive}
-                checkAuthAndFetchPosts={checkAuthAndFetchPosts}
-                authorizedUser={authorizedUser}
-                setTickerContent={setTickerContent}
-                setNotifyChannelCount={setNotifyChannelCount}
-                messages={messages}
-                followRequestData={followRequestData}
-                setFollowRequestData={setFollowRequestData}
+                  setTickerActive={setTickerActive}
+                  checkAuthAndFetchPosts={checkAuthAndFetchPosts}
+                  authorizedUser={authorizedUser}
+                  setTickerContent={setTickerContent}
+                  setNotifyChannelCount={setNotifyChannelCount}
+                  messages={messages}
+                  followRequestData={followRequestData}
+                  setFollowRequestData={setFollowRequestData}
                 />
               }
-            
+
             />
             <Route
               path='/user-profile/:id'
               element={
                 <UserProfile
-                
+
                   authorizedUser={authorizedUser}
                   messages={messages}
                   setTickerActive={setTickerActive}
                   setTickerContent={setTickerContent}
                 />
               }
-            
+
             />
             <Route
               path="/auth"
@@ -136,7 +146,7 @@ function App() {
                   setTickerActive={setTickerActive}
                   setTickerContent={setTickerContent}
                   notifyChannelCount={notifyChannelCount}
-                  
+
                 />
               }
             />
@@ -145,17 +155,20 @@ function App() {
           ""
         )}
 
-        
+
         {/* Add more routes as needed */}
       </Routes>
 
-      <NotificationTicker 
+      <NotificationTicker
         tickerActive={tickerActive}
         setTickerActive={setTickerActive}
         tickerContent={tickerContent}
       />
-      
-
+      {Object.keys(authorizedUser).length > 0 ? (
+      <CreatePost create={create} setCreate={setCreate} authorizedUser={authorizedUser} setPosts={setPosts}/>
+      ) : (
+        ""
+      )}
 
     </div>
   );
