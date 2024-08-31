@@ -146,7 +146,7 @@ a {
 /* Create Post */
 
 .create-post-container {
-  position: absolute;
+  position: fixed;
   top: 8%;
   width: 600px;
   height: 600px;

@@ -129,3 +129,49 @@
     height: 100%;
     object-fit: cover;
 }
+
+
+
+.user-profile-page-header-img{
+    position: relative;
+    transition: all 0.5s ease;  
+}
+
+.profile-pic-chage-hover-container{
+    
+    position: absolute;
+    display: none;
+    width: 100%;
+    height: 100%;
+    
+    top: -1000;
+    left: 0;
+    border-radius: 50%;
+    transition: all 0.5s ease;
+    
+}
+
+.user-profile-page-header-img:hover .profile-pic-chage-hover-container  {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(34, 34, 34, 0.6);
+    top: 0;
+    
+}
+
+.camera {
+    
+}
+
+.camera i {
+    font-size: 30px;
+    text-align: center;
+    transition: all 0.5s ease;
+    
+}
+
+.camera i:hover {
+    scale: 1.19;
+    color: white;
+}

@@ -8,11 +8,11 @@ export const CreatePost = ({ create, setCreate, authorizedUser, setPosts }) => {
     const [caption, setCaption] = useState('');
     const textAreaRef = useRef(null);
 
-    const handleFileClick = () => {
-        document.getElementById('fileInput').click();
+    const handleFileClick_1 = () => {
+        document.getElementById('fileInput_1').click();
     };
 
-    const handleFileChange = (event) => {
+    const handleFileChange_1 = (event) => {
         const file = event.target.files[0];
         set_File(file)
         if (file) {
@@ -84,14 +84,14 @@ export const CreatePost = ({ create, setCreate, authorizedUser, setPosts }) => {
                         <>
                             <input
                                 type="file"
-                                id="fileInput"
+                                id="fileInput_1"
                                 accept="image/*,video/*"
                                 style={{ display: 'none' }}
-                                onChange={handleFileChange}
+                                onChange={handleFileChange_1}
                             />
                             <button
                                 type="button"
-                                onClick={handleFileClick}
+                                onClick={handleFileClick_1}
                                 className="plus-button"
                             >
                                 +

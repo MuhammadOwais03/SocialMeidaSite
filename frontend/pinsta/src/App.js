@@ -10,6 +10,7 @@ import NotificationTicker from './NotificationTicker.js';
 import { HomePost } from './HomePost.js';
 import { UserProfile } from './UserProfile.js';
 import { CreatePost } from './CreatePost.js';
+import Edit from './Edit.js';
 
 import useWebSocket from './useWebSockets.js';
 
@@ -24,9 +25,18 @@ function App() {
   const [notifyChannelCount, setNotifyChannelCount] = useState(-1)
   const [followRequestData, setFollowRequestData] = useState([])
   const [create, setCreate] = useState('create-not-active')
+  const [edit, setEdit] = useState('edit-not-active')
+  const [fullName, setFullName] = useState("")
+  const [username, setUsername] = useState("")
+  const [bio, setBio] = useState("")
+  const [profPic, setProfPic] = useState("")
 
   const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
 
+  useEffect(()=>{
+    setEdit('edit-not-active')
+    setCreate('create-not-active')
+  }, [location.pathname])
 
   const checkAuthAndFetchPosts = async () => {
     try {
@@ -61,12 +71,24 @@ function App() {
     async function getUser() {
       let data = await getUserInfo();
       setAuthorizedUser(data)
-      console.log(authorizedUser)
+      
+      
     }
 
     getUser()
+      
 
   }, [])
+
+  useEffect(()=>{
+    if (Object.keys(authorizedUser).length > 0) {
+      setFullName(authorizedUser.user.first_name + " " + authorizedUser.user.last_name)
+      setUsername(authorizedUser.user.username)
+      setBio(authorizedUser.user.bio)
+      setProfPic(authorizedUser.profile_picture)
+    }
+    
+  }, [authorizedUser])
 
   
 
@@ -86,6 +108,8 @@ function App() {
         setFollowRequestData={setFollowRequestData}
         create={create}
         setCreate={setCreate}
+        profPic={profPic}
+        setProfPic={setProfPic}
       />
     ) : (
       ""
@@ -135,6 +159,13 @@ function App() {
                   messages={messages}
                   setTickerActive={setTickerActive}
                   setTickerContent={setTickerContent}
+                  setEdit={setEdit}
+                  fullName={fullName}
+                  username={username}
+                  bio={bio}
+                  profPic={profPic}
+                  setProfPic={setProfPic}
+
                 />
               }
 
@@ -165,7 +196,22 @@ function App() {
         tickerContent={tickerContent}
       />
       {Object.keys(authorizedUser).length > 0 ? (
-      <CreatePost create={create} setCreate={setCreate} authorizedUser={authorizedUser} setPosts={setPosts}/>
+        <>
+        <CreatePost create={create} setCreate={setCreate} authorizedUser={authorizedUser} setPosts={setPosts}/>
+        <Edit 
+        edit={edit} 
+        setEdit={setEdit} 
+        authorizedUser={authorizedUser} 
+        setFullName={setFullName} 
+        setUsername={setUsername} 
+        setBio={setBio} 
+        fullName={fullName}
+        username={username}
+        bio={bio}
+        setTickerActive={setTickerActive}
+        setTickerContent={setTickerContent}
+        />
+      </>
       ) : (
         ""
       )}

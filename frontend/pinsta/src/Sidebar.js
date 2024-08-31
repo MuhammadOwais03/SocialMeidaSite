@@ -12,7 +12,7 @@ const Sidebar = ({ authorizedUser,
   notifyChannelCount, messages, 
   setTickerActive, setTickerContent, 
   followRequestData, setFollowRequestData,
-  create,setCreate 
+  create,setCreate, profPic, setProfPic
 }) => {
   const [homeLogo, setHomeLogo] = useState("");
   const [searchLogo, setSearchLogo] = useState("");
@@ -288,7 +288,7 @@ const Sidebar = ({ authorizedUser,
               {hasUserData ? (
                 <>
                   <img
-                    src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${authorizedUser.profile_picture}` : 'default_profile_picture_url'}
+                    src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${profPic}` : 'default_profile_picture_url'}
                     alt="Profile"
                   />
                   <h3>{authorizedUser.user.username}  {authorizedUser.user.id}</h3>

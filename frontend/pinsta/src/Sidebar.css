@@ -16,6 +16,11 @@
 
 .sidebar.reduced-width {
     width: 60px;
+    padding: 0.6rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
 .pic-heading {
@@ -27,6 +32,10 @@
   /* When sidebar is reduced, hide the h3 */
 .reduced-width .side h3 {
     display: none;
+}
+
+.reduced-width .side {
+    justify-content: center;
 }
 
 .sidebar i {
@@ -52,9 +61,11 @@
 .side {
     display: flex;
     flex-direction: row;
+    
     gap: 1.3rem;
     margin-bottom: 30px;
     padding: 1rem;
+    padding-left: 0.3rem;
     transition: all 1s ease;
     cursor: pointer;
     align-items: center;
@@ -63,8 +74,9 @@
 
 .profile_side img {
     width: 50px;
-    height: 55px;
+    height: 50px;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 
@@ -307,12 +319,14 @@ i, svg {
     display: flex;
     justify-content: center;
     align-items: center;
+    object-fit: cover;
 }
 
 .inside-logo img {
     
     border-radius: 50%;
     border: 2px solid black;
+    object-fit: cover;
 }
 
 .inside-content a {
