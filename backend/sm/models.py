@@ -110,7 +110,7 @@ class Like(models.Model):
 
 
 class SavedPost(models.Model):
-    author_of_post = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
 

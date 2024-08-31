@@ -350,6 +350,10 @@ class PostViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_context(self):
+        # Pass the request object to the serializer context
+        return {'request': self.request}
+
     def get_queryset(self):
         user = self.request.user
 
@@ -538,6 +542,21 @@ class SavedPostViewSet(viewsets.ModelViewSet):
     serializer_class = SavedPostSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data.get('user')
+        post_id = request.data.get('post')
+
+        user = User.objects.get(id=user_id)
+        post = Post.objects.get(id=post_id)
+
+        saved = SavedPost.objects.create(
+            user=user,
+            post=post
+        )
+
+        serializer = SavedPostSerializer(saved)
+        return Response(serializer.data)
 
 
 class SearchUserProfile(viewsets.ModelViewSet):

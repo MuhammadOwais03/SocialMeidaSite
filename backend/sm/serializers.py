@@ -153,11 +153,15 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+
 class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer()
     comment_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     like_obj = serializers.SerializerMethodField()
+    saved_by_user = serializers.SerializerMethodField()
     # like_by_auth_user = serializers.SerializerMethodField()
 
     class Meta:
@@ -175,8 +179,16 @@ class PostSerializer(serializers.ModelSerializer):
         likes = Like.objects.filter(post=obj)
         return LikeSerializer(likes, many=True).data
 
+    def get_saved_by_user(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            saved_posts = SavedPost.objects.filter(post=obj, user=request.user)
+            return saved_posts.exists()
+        return None
 
 class SavedPostSerializer(serializers.ModelSerializer):
+    user=UserSerializer()
+    post = PostSerializer()
 
     class Meta:
         model = SavedPost
