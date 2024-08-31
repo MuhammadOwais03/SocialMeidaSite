@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LikePostRequest, AddComment } from './server-requests';
+import { LikePostRequest, AddComment, savedPost } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
 
@@ -15,15 +15,15 @@ function timeSince(dateString) {
 
 
     if (differenceInDays === 0) {
-        return 'now';
+        return differenceInHours + "hrs";
     }
 
     else if (differenceInDays > 0) {
-        return differenceInDays === 1? `${differenceInDays} day`:`${differenceInDays} days`;
+        return differenceInDays === 1 ? `${differenceInDays} day` : `${differenceInDays} days`;
     } else if (differenceInHours > 0) {
-        return differenceInDays === 1? `${differenceInDays} hour`:`${differenceInDays} hours`;
+        return differenceInDays === 1 ? `${differenceInDays} hour` : `${differenceInDays} hours`;
     } else {
-        return differenceInDays === 1? `${differenceInDays} minute`:`${differenceInDays} minutes`;
+        return differenceInDays === 1 ? `${differenceInDays} minute` : `${differenceInDays} minutes`;
     }
 }
 
@@ -31,19 +31,19 @@ const Post = ({
     readMore, setReadMore,
     close, setClose,
     caption, post,
-    authorizedUser, 
+    authorizedUser,
     // socket,
     setTickerActive,
     setTickerContent, setCommentId,
     setNotifyChannelCount, messages,
-    
+
 }) => {
 
-//     const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/notifications/?token=${get_token('accessToken')}`);
+    //     const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/notifications/?token=${get_token('accessToken')}`);
 
-//   useEffect(() => {
-//     console.log(messages); // Handle WebSocket messages here if needed
-//   }, [messages]);
+    //   useEffect(() => {
+    //     console.log(messages); // Handle WebSocket messages here if needed
+    //   }, [messages]);
 
 
     const [likesCount, setLikesCount] = useState(post.likes_count);
@@ -51,16 +51,17 @@ const Post = ({
     const [likeUsers, setLikeUsers] = useState(post.like_obj);
     const [isLikeAuth, setIsLikeAuth] = useState(false);
     const [addComment, setAddComment] = useState("")
+    const [fillColor, setFillColor] = useState('none');
 
     // const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
 
     useEffect(() => {
         if (messages) { // Check if messages is defined
             console.log('Received message:', messages); // Debugging output
-    
+
             if (messages.category === 'like_post' || messages.category === 'dislike') {
                 if (messages.post_id === post.id) {
-                    setLikesCount(messages.like_count); 
+                    setLikesCount(messages.like_count);
                     setTickerContent(messages.message);
                     setNotifyChannelCount(messages.notification_count);
                     setTickerActive('ticker-active');
@@ -72,18 +73,18 @@ const Post = ({
                     setNotifyChannelCount(messages.notification_count);
                     setTickerActive('ticker-active');
                 }
-                
-            } else if (messages.category==='post_posted') {
-                
+
+            } else if (messages.category === 'post_posted') {
+
                 setTickerContent(messages.message);
                 setNotifyChannelCount(messages.notification_count);
                 setTickerActive('ticker-active');
-            } 
+            }
 
-        messages = ""
+            messages = ""
         }
     }, [messages]);
-    
+
 
     useEffect(() => {
         const userHasLiked = likeUsers.some(obj => obj.like_by === authorizedUser.user.id);
@@ -92,8 +93,14 @@ const Post = ({
         }
     }, [likeUsers, authorizedUser]);
 
+    useEffect(()=>{
+        if (post.saved_by_user){
+            setFillColor(true)
+        }
+    }, [])
 
-    
+
+
 
     const handleLike = async () => {
         const likeAction = isLikeAuth ? "-" : "+";
@@ -106,7 +113,7 @@ const Post = ({
         }
 
         console.log(likesCount)
-    
+
         setIsLikeAuth(!isLikeAuth);
     };
 
@@ -116,32 +123,49 @@ const Post = ({
     };
 
     const handleSubmit = (e) => {
-        e.preventDefault(); 
-        
+        e.preventDefault();
+
         async function Comment() {
-            let response = await AddComment(addComment, authorizedUser.user.id,post.id)
+            let response = await AddComment(addComment, authorizedUser.user.id, post.id)
             return response
         }
 
         console.log(Comment())
 
-        setCommentCount(commentCount+1)
-
-        
-
-        
+        setCommentCount(commentCount + 1)
 
 
-        setAddComment(''); 
+
+
+
+
+        setAddComment('');
     };
 
     console.log(post)
 
     const Time = timeSince(post.created_at);
 
+
+    const handleSavedClick = () => {
+        console.log("ENTER")
+        let saved = async () => {
+
+            let res = await savedPost(authorizedUser.user.id, post.id)
+            setFillColor(prevColor => (prevColor === 'none' ? 'black' : 'none'));
+
+        }
+
+        saved()
+
+
+
+
+    }
+
     let mainContent, captionContent;
     if (post.post_type === 'image') {
-        mainContent = <img src={post.post_image.includes('http')?post.post_image:`http://127.0.0.1:8000${post.post_image}`} alt="" width="750" height="500" />;
+        mainContent = <img src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`} alt="" width="750" height="500" />;
         captionContent = (
             <p>
                 {post.caption && (
@@ -170,7 +194,7 @@ const Post = ({
         );
     } else if (post.post_type === 'video') {
         mainContent = (
-            <video width="750" height="500" controls  loop>
+            <video width="750" height="500" controls loop>
                 <source src={post.video_file} type="video/mp4" />
             </video>
         );
@@ -226,16 +250,23 @@ const Post = ({
                         <i className="fa-regular fa-message"></i>
                         <i className="fa-duotone fa-solid fa-share"></i>
                     </div>
-                    <svg width="25" height="25" viewBox="0 0 24 24">
+                    <svg
+                        width="25"
+                        height="25"
+                        viewBox="0 0 24 24"
+                        onClick={handleSavedClick}
+                        style={{ cursor: 'pointer' }}
+                    >
                         <polygon
-                            fill="none"
+                            fill={fillColor}
                             points="20 21 12 13.44 4 21 4 3 20 3 20 21"
-                            stroke="currentColor"
+                            stroke="black"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth="2">
-                        </polygon>
+                            strokeWidth="2"
+                        />
                     </svg>
+
                 </div>
                 <p className={`like-post-${post.id}`}>{likesCount} Likes</p>
                 <div className="post-caption">{captionContent}</div>
@@ -243,20 +274,20 @@ const Post = ({
                     <p onClick={() => {
                         setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
                         setCommentId(post.id);
-                        
+
                     }}>
                         {`View ${commentCount} comments`}
                     </p>
                     <form onSubmit={handleSubmit}>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder='Add a comment...'
                             value={addComment}
                             onChange={handleChange}
                         />
                         <button type='submit'>Add</button>
                     </form>
-                    
+
                 </div>
             </div>
         </div>

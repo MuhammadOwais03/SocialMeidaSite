@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import './UserProfile.css'
 import default_image from './default_image.jpg'
-import { get_friend_status, acceptFollow, followRequest, changePic } from './server-requests'
+import { get_friend_status, acceptFollow, followRequest, changePic, getSavedPost } from './server-requests'
 import { useParams } from "react-router-dom";
 import RenderButton from './RenderButton';
 // import './Sidebar.css';
@@ -14,7 +14,8 @@ export const UserProfile = ({
 }) => {
     const [toggleNav, setToggleNav] = useState('post')
     const [data, setData] = useState("")
-    // const [profPic, setProfPic] = useState("")
+    const [savedData, setSavedData] = useState({})
+    const [isLoading, setIsLoading] = useState(false);
     const { id } = useParams();
 
     useEffect(() => {
@@ -29,7 +30,7 @@ export const UserProfile = ({
                 console.error('Error:', error);
             });
 
-            console.log(bio, "Bio")
+        console.log(bio, "Bio")
 
     }, [id])
 
@@ -91,6 +92,19 @@ export const UserProfile = ({
             // removeFollowRequest(data.id);
         }
     };
+
+
+    const handleSavedArea = async () => {
+        setIsLoading(true)
+        try {
+            let res = await getSavedPost(authorizedUser.user.id)
+            setSavedData(res)
+        }
+
+        finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <>
@@ -193,19 +207,22 @@ export const UserProfile = ({
 
                                 </div>
                                 <div className="user-profile-page-header-body-bio">
-                                {authorizedUser.user.id === data.friendStatus.friend_request_profile.id && bio ?(
-                                    <p>{bio}</p>
-                                ):(
-                                    
-                                    <p>{data.friendStatus.friend_request_profile.bio}</p>
-                                )}
+                                    {authorizedUser.user.id === data.friendStatus.friend_request_profile.id && bio ? (
+                                        <p>{bio}</p>
+                                    ) : (
+
+                                        <p>{data.friendStatus.friend_request_profile.bio}</p>
+                                    )}
                                 </div>
                             </div>
 
                         </div>
                         <div className="user-profile-navigation">
                             <p className={`post-nav ${toggleNav === 'post' ? 'Post' : ""}`} onClick={() => setToggleNav('post')}  >Post</p>
-                            {authorizedUser.user.id === data.friendStatus.friend_request_profile.id ? <p className={`saved-nav ${toggleNav === 'saved' ? 'Saved' : ""}`} onClick={() => setToggleNav('saved')}>Saved</p> : ""}
+                            {authorizedUser.user.id === data.friendStatus.friend_request_profile.id ? <p className={`saved-nav ${toggleNav === 'saved' ? 'Saved' : ""}`} onClick={() => {
+                                setToggleNav('saved');
+                                handleSavedArea();
+                            }}>Saved</p> : ""}
 
                         </div>
                         <div className="user-profile-body">
@@ -242,27 +259,40 @@ export const UserProfile = ({
                             ) : (
                                 <>
                                     <div className="all-post-container">
-                                        <div className="post-container">
-                                            <div className="post-img">
-                                                <img src={default_image} alt="" />
-                                            </div>
-                                        </div>
-                                        <div className="post-container">
-                                            <div className="post-img">
-                                                <img src={default_image} alt="" />
-                                            </div>
-                                        </div>
-                                        <div className="post-container">
-                                            <div className="post-img">
-                                                <img src={default_image} alt="" />
-                                            </div>
-                                        </div>
-                                        <div className="post-container">
-                                            <div className="post-img">
-                                                <img src={default_image} alt="" />
-                                            </div>
-                                        </div>
+                                        {isLoading ? (
+                                            <p>Loading posts...</p>
+                                        ) : (
+                                            <>
+                                                {Object.keys(savedData).length ? (
+                                                    savedData.map((save) => (
+                                                        save.post.post_type !== 'text' ?
+                                                            <div key={save.id} className="post-container">
+                                                                <div className="post-img">
+                                                                    {save.post.post_type === 'image' ?
+
+                                                                        <img src={save.post.post_image} alt="" />
+                                                                        :
+                                                                        <video controls loop>
+                                                                            <source src={save.post.video_file} type="video/mp4" />
+                                                                        </video>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            : ""
+                                                    ))
+                                                ) : (
+                                                    <>
+                                                        <p>No Saved</p>
+                                                    </>
+                                                )}
+
+
+
+                                            </>
+                                        )}
                                     </div>
+
+
                                 </>
                             )}
                         </div>

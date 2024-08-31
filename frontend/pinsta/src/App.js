@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { checking_token, checkingTokenExpired, allPosts, getUserInfo, get_token } from './server-requests';
 import './App.css';
 
@@ -15,6 +17,7 @@ import Edit from './Edit.js';
 import useWebSocket from './useWebSockets.js';
 
 function App() {
+  const navigate = useNavigate();
   const location = useLocation();
   const hideSidebar = location.pathname === '/auth'; // Hide Sidebar on the Auth page
   const [posts, setPosts] = useState([]);
@@ -33,7 +36,7 @@ function App() {
 
   const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
 
-  useEffect(()=>{
+  useEffect(() => {
     setEdit('edit-not-active')
     setCreate('create-not-active')
   }, [location.pathname])
@@ -62,58 +65,76 @@ function App() {
     }
   };
 
+  function isObject(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) && value !== null;
+  }
+
 
 
   useEffect(() => {
-
-
-
-    async function getUser() {
-      let data = await getUserInfo();
-      setAuthorizedUser(data)
-      
-      
+    async function fetchData() {
+      try {
+        let token_check = await checking_token();
+        console.log(token_check)
+        if (token_check) {
+          const status_code = await checkingTokenExpired();
+          console.log(status_code)
+          if (status_code === 401) {
+            // Redirect to /auth without a full page reload
+            console.log(status_code)
+            return navigate('/auth');;
+          }
+  
+          // Fetch user info if token is valid
+          let data = await getUserInfo();
+  
+          if (isObject(data)) {
+            setAuthorizedUser(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error in fetchData:', error);
+      }
     }
+  
+    fetchData();
+  }, []);
 
-    getUser()
-      
-
-  }, [])
-
-  useEffect(()=>{
-    if (Object.keys(authorizedUser).length > 0) {
+  useEffect(() => {
+    if (isObject(authorizedUser) && Object.keys(authorizedUser).length > 0) {
       setFullName(authorizedUser.user.first_name + " " + authorizedUser.user.last_name)
       setUsername(authorizedUser.user.username)
       setBio(authorizedUser.user.bio)
       setProfPic(authorizedUser.profile_picture)
+      console.log(authorizedUser)
     }
-    
+
   }, [authorizedUser])
 
-  
+
 
 
   // console.log(location.pathname, authorizedUser )
 
   return (
     <div className="App">
-      {Object.keys(authorizedUser).length > 0 ? (
-    !hideSidebar && <Sidebar
-        authorizedUser={authorizedUser}
-        notifyChannelCount={notifyChannelCount}
-        messages={messages}
-        setTickerActive={setTickerActive}
-        setTickerContent={setTickerContent}
-        followRequestData={followRequestData}
-        setFollowRequestData={setFollowRequestData}
-        create={create}
-        setCreate={setCreate}
-        profPic={profPic}
-        setProfPic={setProfPic}
-      />
-    ) : (
-      ""
-    )}
+      {Object.keys(authorizedUser).length ? (
+        !hideSidebar && <Sidebar
+          authorizedUser={authorizedUser}
+          notifyChannelCount={notifyChannelCount}
+          messages={messages}
+          setTickerActive={setTickerActive}
+          setTickerContent={setTickerContent}
+          followRequestData={followRequestData}
+          setFollowRequestData={setFollowRequestData}
+          create={create}
+          setCreate={setCreate}
+          profPic={profPic}
+          setProfPic={setProfPic}
+        />
+      ) : (
+        ""
+      )}
       <Routes>
         {Object.keys(authorizedUser).length > 0 ? (
           <>
@@ -170,7 +191,12 @@ function App() {
               }
 
             />
-            <Route
+
+            
+
+          </>
+        ) : (
+          <Route
               path="/auth"
               element={
                 <Auth
@@ -181,9 +207,6 @@ function App() {
                 />
               }
             />
-          </>
-        ) : (
-          ""
         )}
 
 
@@ -197,21 +220,21 @@ function App() {
       />
       {Object.keys(authorizedUser).length > 0 ? (
         <>
-        <CreatePost create={create} setCreate={setCreate} authorizedUser={authorizedUser} setPosts={setPosts}/>
-        <Edit 
-        edit={edit} 
-        setEdit={setEdit} 
-        authorizedUser={authorizedUser} 
-        setFullName={setFullName} 
-        setUsername={setUsername} 
-        setBio={setBio} 
-        fullName={fullName}
-        username={username}
-        bio={bio}
-        setTickerActive={setTickerActive}
-        setTickerContent={setTickerContent}
-        />
-      </>
+          <CreatePost create={create} setCreate={setCreate} authorizedUser={authorizedUser} setPosts={setPosts} />
+          <Edit
+            edit={edit}
+            setEdit={setEdit}
+            authorizedUser={authorizedUser}
+            setFullName={setFullName}
+            setUsername={setUsername}
+            setBio={setBio}
+            fullName={fullName}
+            username={username}
+            bio={bio}
+            setTickerActive={setTickerActive}
+            setTickerContent={setTickerContent}
+          />
+        </>
       ) : (
         ""
       )}

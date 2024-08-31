@@ -27,34 +27,66 @@ export async function getUserInfo() {
             const response = await fetch('http://127.0.0.1:8000/api/authenticated-user-info/', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${get_token('accessToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
+
+            if (!response.ok) {
+                // Handle HTTP errors
+                if (response.status === 401) {
+                    // Unauthorized access - maybe the token is invalid or expired
+                    console.error('Unauthorized access. Please log in again.');
+                    
+                    return response.status
+                    // Optionally, redirect to the login page or clear the token
+                } else if (response.status >= 500) {
+                    // Server error
+                    console.error('Server error. Please try again later.');
+                    
+                } else {
+                    // Other types of errors
+                    console.error('Error fetching user info:', response.statusText);
+                    
+                }
+                return null;
+            }
+
             const data = await response.json();
-            // console.log('Logged in user:', data);
             return data;
+
         } catch (error) {
-            console.error('Error fetching user info:', error);
+            // Handle network errors or other unexpected issues
+            console.error('Network or unexpected error:', error);
+            return null;
         }
+    } else {
+        // Handle the case where the token is not available
+        console.error('No token found. User might not be logged in.');
+        return null;
     }
 }
+
 export async function checkingTokenExpired() {
     try {
         const response = await fetch('http://127.0.0.1:8000/api/protected/', {
-            method: 'GET',  // Use 'GET' since that's what your view expects
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${get_token('accessToken')}` // Set the token in the header
             }
         });
 
-        return response.status
-
+        if (response.ok) {
+            return 200; // Token is valid
+        } else {
+            return response.status; // Return status code if response is not ok
+        }
     } catch (error) {
-        console.log('catch', error);
-        return 'Something Went Wrong'; // Return 'catch' or handle the error as needed
+        console.error('Error checking token status:', error);
+        return 'Something Went Wrong'; // Return a generic message or handle error as needed
     }
 }
+
 
 
 export async function signUp(data) {
@@ -559,6 +591,50 @@ export async function editProfile(fullName, username, bio, id) {
         console.log("Status Code: ", response.status)
         return response.status
         // throw new Error(`Error creating post: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(result)
+    return result;
+}
+
+
+export async function savedPost(user_id, post_id) {
+    const response = await fetch('http://127.0.0.1:8000/api/saved/', {
+        method:"POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        }, 
+        body: JSON.stringify({
+            "user":user_id,
+            "post":post_id
+        })
+    })
+    if (!response.ok) {
+        console.log("Status Code: ", response.status)
+        return response.status
+        // throw new Error(`Error creating post: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(result)
+    return result;
+}
+
+export async function getSavedPost(user_id) {
+    const response = await fetch("http://127.0.0.1:8000/api/saved/", {
+        method:"GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        },
+    })
+
+    if (!response.ok) {
+        console.log("Status Code: ", response.status)
+        return response.status
+        
     }
 
     const result = await response.json();
