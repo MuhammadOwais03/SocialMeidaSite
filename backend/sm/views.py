@@ -169,6 +169,50 @@ class UserModelViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def partial_update(self, request, *args, **kwargs):
+        print(request.data)
+        user_id = request.data.get('id')
+        Type = request.data.get('type')
+
+        user = User.objects.get(id=user_id)
+        user_profile = UserProfile.objects.get(user=user)
+
+
+        if Type.lower() == 'image':
+            file = request.data.get('file')
+            user_profile.profile_picture = file
+            user_profile.save()
+        
+        elif Type.lower() == "edit":
+            username = request.data.get('username')
+            fullname = request.data.get('fullName')
+            bio = request.data.get('bio')
+            try:
+                first_name, last_name = fullname.split(" ", 1)
+            except ValueError:
+                first_name = fullname  
+                last_name = ""
+
+
+            if User.objects.filter(username=username).exclude(id=user.id).exists():
+                return Response(
+                    {"error": "Username already exists"},
+                    status=status.HTTP_409_CONFLICT
+                )
+            
+            user.username = username
+            user_profile.username = username
+            user.first_name = first_name
+            user.last_name = last_name
+            user_profile.full_name = fullname
+            user_profile.bio = bio
+            user.save()
+            user_profile.save()
+
+        
+        user_profile_serializer = UserProfileSerializer(user_profile)
+        return Response({"status":"Successfully Changed", "serializer":user_profile_serializer.data})
+
 
 class AuthenticatedUserViewSet(APIView):
     permission_classes = [IsAuthenticated]
