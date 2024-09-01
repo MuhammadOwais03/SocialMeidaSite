@@ -171,35 +171,33 @@ class UserModelViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         print(request.data)
-        user_id = request.data.get('id')
-        Type = request.data.get('type')
+        user_id = request.data.get("id")
+        Type = request.data.get("type")
 
         user = User.objects.get(id=user_id)
         user_profile = UserProfile.objects.get(user=user)
 
-
-        if Type.lower() == 'image':
-            file = request.data.get('file')
+        if Type.lower() == "image":
+            file = request.data.get("file")
             user_profile.profile_picture = file
             user_profile.save()
-        
+
         elif Type.lower() == "edit":
-            username = request.data.get('username')
-            fullname = request.data.get('fullName')
-            bio = request.data.get('bio')
+            username = request.data.get("username")
+            fullname = request.data.get("fullName")
+            bio = request.data.get("bio")
             try:
                 first_name, last_name = fullname.split(" ", 1)
             except ValueError:
-                first_name = fullname  
+                first_name = fullname
                 last_name = ""
-
 
             if User.objects.filter(username=username).exclude(id=user.id).exists():
                 return Response(
                     {"error": "Username already exists"},
-                    status=status.HTTP_409_CONFLICT
+                    status=status.HTTP_409_CONFLICT,
                 )
-            
+
             user.username = username
             user_profile.username = username
             user.first_name = first_name
@@ -209,9 +207,13 @@ class UserModelViewSet(viewsets.ModelViewSet):
             user.save()
             user_profile.save()
 
-        
         user_profile_serializer = UserProfileSerializer(user_profile)
-        return Response({"status":"Successfully Changed", "serializer":user_profile_serializer.data})
+        return Response(
+            {
+                "status": "Successfully Changed",
+                "serializer": user_profile_serializer.data,
+            }
+        )
 
 
 class AuthenticatedUserViewSet(APIView):
@@ -352,7 +354,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         # Pass the request object to the serializer context
-        return {'request': self.request}
+        return {"request": self.request}
 
     def get_queryset(self):
         user = self.request.user
@@ -363,7 +365,7 @@ class PostViewSet(viewsets.ModelViewSet):
         )
 
         # Retrieve posts authored by friends or the authenticated user
-        queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user))
+        queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user)).order_by("-created_at")
 
         # Sort posts by created_at in descending order (most recent first)
         return queryset
@@ -372,7 +374,8 @@ class PostViewSet(viewsets.ModelViewSet):
         req_id = request.query_params.get("req_id", "")
         if req_id:
             user = User.objects.get(id=req_id)
-            posts = Post.objects.filter(author=user)
+            posts = Post.objects.filter(author=user).order_by("-created_at")
+
             print(posts, user)
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
@@ -543,17 +546,21 @@ class SavedPostViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        user = User.objects.get(username=user)
+        saved_objs = SavedPost.objects.filter(user=user)
+        serializer = SavedPostSerializer(saved_objs, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
-        user_id = request.data.get('user')
-        post_id = request.data.get('post')
+        user_id = request.data.get("user")
+        post_id = request.data.get("post")
 
         user = User.objects.get(id=user_id)
         post = Post.objects.get(id=post_id)
 
-        saved = SavedPost.objects.create(
-            user=user,
-            post=post
-        )
+        saved = SavedPost.objects.create(user=user, post=post)
 
         serializer = SavedPostSerializer(saved)
         return Response(serializer.data)

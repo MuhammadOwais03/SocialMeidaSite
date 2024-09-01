@@ -153,15 +153,13 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
-
-
 class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer()
     comment_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     like_obj = serializers.SerializerMethodField()
     saved_by_user = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
     # like_by_auth_user = serializers.SerializerMethodField()
 
     class Meta:
@@ -186,8 +184,26 @@ class PostSerializer(serializers.ModelSerializer):
             return saved_posts.exists()
         return None
 
+    def get_profile_picture(self, obj):
+        try:
+            
+            user_profile_picture = UserProfile.objects.get(
+                user=obj.author
+            ).profile_picture
+
+            
+            if user_profile_picture and hasattr(user_profile_picture, "url"):
+                return user_profile_picture.url
+            else:
+                
+                return ""  
+        except UserProfile.DoesNotExist:
+           
+            return ""  
+
+
 class SavedPostSerializer(serializers.ModelSerializer):
-    user=UserSerializer()
+    user = UserSerializer()
     post = PostSerializer()
 
     class Meta:
