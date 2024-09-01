@@ -17,6 +17,7 @@ import Edit from './Edit.js';
 import useWebSocket from './useWebSockets.js';
 
 function App() {
+  
   const navigate = useNavigate();
   const location = useLocation();
   const hideSidebar = location.pathname === '/auth'; // Hide Sidebar on the Auth page

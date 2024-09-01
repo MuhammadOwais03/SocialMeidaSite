@@ -4,6 +4,7 @@ import default_image from './default_image.jpg'
 import { get_friend_status, acceptFollow, followRequest, changePic, getSavedPost } from './server-requests'
 import { useParams } from "react-router-dom";
 import RenderButton from './RenderButton';
+import { LoadingSpinner } from './LoadingSpinner.js';
 // import './Sidebar.css';
 
 export const UserProfile = ({
@@ -260,7 +261,7 @@ export const UserProfile = ({
                                 <>
                                     <div className="all-post-container">
                                         {isLoading ? (
-                                            <p>Loading posts...</p>
+                                            <LoadingSpinner/>
                                         ) : (
                                             <>
                                                 {Object.keys(savedData).length ? (
@@ -270,10 +271,10 @@ export const UserProfile = ({
                                                                 <div className="post-img">
                                                                     {save.post.post_type === 'image' ?
 
-                                                                        <img src={save.post.post_image} alt="" />
+                                                                        <img src={`http://127.0.0.1:8000${save.post.post_image}`} alt="" />
                                                                         :
                                                                         <video controls loop>
-                                                                            <source src={save.post.video_file} type="video/mp4" />
+                                                                            <source src={`http://127.0.0.1:8000${save.post.video_file}`} type="video/mp4" />
                                                                         </video>
                                                                     }
                                                                 </div>

@@ -4,6 +4,7 @@ import './Sidebar.css';
 import useWebSocket from './useWebSockets.js';
 import { Link } from 'react-router-dom';
 import RenderButton from "./RenderButton.js";
+import { LoadingSpinner } from "./LoadingSpinner.js";
 
 
 
@@ -317,9 +318,7 @@ const Sidebar = ({ authorizedUser,
           {notifyCont ? (
             <>
               {loading ? (
-                <div className="loading-spinner-1">
-                  <div className="spinner-1"></div>
-                </div>
+                <LoadingSpinner/>
               ) : (
                 <>
                   <h1>Notifications</h1>
@@ -379,9 +378,7 @@ const Sidebar = ({ authorizedUser,
                 )}
               </div>
               {loading ? (
-                <div className="loading-spinner-1">
-                  <div className="spinner-1"></div>
-                </div>
+                <LoadingSpinner/>
               ) : (
                 <div className="search-cont">
                   {searchList.length > 0 ? (

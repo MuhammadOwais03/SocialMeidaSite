@@ -112,6 +112,7 @@
     justify-content: flex-start;
     width: 90%;
     margin-left: 10rem;
+    position: relative;
 }
 
 .all-post-container .post-img {

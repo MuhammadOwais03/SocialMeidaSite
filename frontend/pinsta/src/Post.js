@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { LikePostRequest, AddComment, savedPost } from './server-requests';
+import { LikePostRequest, AddComment, savedPost, fetchingCommentPost } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
+import Modal from './Modal'; // Import the Modal component
 
 
 function timeSince(dateString) {
@@ -36,6 +37,7 @@ const Post = ({
     setTickerActive,
     setTickerContent, setCommentId,
     setNotifyChannelCount, messages,
+    setComments, commentId, comments
 
 }) => {
 
@@ -52,8 +54,42 @@ const Post = ({
     const [isLikeAuth, setIsLikeAuth] = useState(false);
     const [addComment, setAddComment] = useState("")
     const [fillColor, setFillColor] = useState('none');
+    const [isImageOpen, setIsImageOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
     // const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+
+
+    async function getComment() {
+        let get_comment_response = await fetchingCommentPost(post.id);
+        return get_comment_response;
+    }
+
+
+    const get_comments = () => {
+        console.log("ENTERING")
+        getComment().then(
+            (data) => {
+                console.log(data)
+                setComments(data)
+            }
+
+        ).catch(
+            (error) => console.error('Error fetching comment:', error)
+        );
+        if (commentId) {
+            
+        }
+    }
 
     useEffect(() => {
         if (messages) { // Check if messages is defined
@@ -163,9 +199,20 @@ const Post = ({
 
     }
 
+    const handleImageClick = () => {
+        setIsImageOpen(!isImageOpen);
+    };
+
     let mainContent, captionContent;
     if (post.post_type === 'image') {
-        mainContent = <img src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`} alt="" width="750" height="500" />;
+        mainContent = 
+        <img 
+        src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`} 
+        alt="" 
+        width="750" 
+        height="500" 
+        onClick={openModal} 
+        />;
         captionContent = (
             <p>
                 {post.caption && (
@@ -230,9 +277,11 @@ const Post = ({
     }
 
     return (
+        <>
         <div className="post">
             <div className="post-header">
-                <img src={download} alt="" width="40px" height="40px" />
+                <img src={post.profile_picture?`http://127.0.0.1:8000${post.profile_picture}`:download} alt="" width="40px" height="40px" />
+                {post.author.profile_picture}
                 <div className="post-header-content">
                     <h4>{`${post.author.first_name} ${post.author.last_name} @${post.author.username} ${post.id}`}</h4>
                     <p>{Time}</p>
@@ -274,6 +323,7 @@ const Post = ({
                     <p onClick={() => {
                         setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
                         setCommentId(post.id);
+                        get_comments()
 
                     }}>
                         {`View ${commentCount} comments`}
@@ -291,6 +341,10 @@ const Post = ({
                 </div>
             </div>
         </div>
+        
+        
+        <Modal isOpen={isModalOpen} onClose={closeModal} imageSrc={post.post_image} authorName={`${post.author.first_name} ${post.author.last_name}`} />
+        </>
     );
 }
 

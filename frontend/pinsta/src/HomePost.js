@@ -34,20 +34,20 @@ export const HomePost = ({
         console.log(followRequestData)
     }, [postID]);
     
-    useEffect(() => {
-        if (commentId) {
-            const getComment = async () => {
-                try {
-                    const data = await fetchingCommentPost(commentId);
-                    setComments(data);
-                } catch (error) {
-                    console.error('Error fetching comment:', error);
-                }
-            };
+    // useEffect(() => {
+    //     if (commentId) {
+    //         const getComment = async () => {
+    //             try {
+    //                 const data = await fetchingCommentPost(commentId);
+    //                 setComments(data);
+    //             } catch (error) {
+    //                 console.error('Error fetching comment:', error);
+    //             }
+    //         };
 
-            getComment();
-        }
-    }, [commentId]);
+    //         getComment();
+    //     }
+    // }, [commentId]);
 
     const removeFollowRequest = (followID) => {
         setFollowRequestData(prevFollowRequestData =>
@@ -112,6 +112,9 @@ export const HomePost = ({
                             setCommentId={setCommentId}
                             setNotifyChannelCount={setNotifyChannelCount}
                             messages={messages}
+                            setComments={setComments}
+                            commentId={commentId}
+                            comments={comments}
                         />
                     )
                     
