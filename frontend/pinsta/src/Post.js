@@ -5,6 +5,7 @@ import './Home.css';
 import Modal from './Modal'; // Import the Modal component
 import { LoadingSpinner } from './LoadingSpinner';
 import { Link } from 'react-router-dom';
+import { url } from './image_source';
 
 
 function timeSince(dateString) {
@@ -210,7 +211,7 @@ const Post = ({
     if (post.post_type === 'image') {
         mainContent =
             <img
-                src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`}
+                src={post.post_image.includes('http') ? post.post_image : `${url}${post.post_image}`}
                 alt=""
                 width="750"
                 height="500"
@@ -306,7 +307,7 @@ const Post = ({
         <>
             <div className="post">
                 <div className="post-header">
-                    <img src={post.profile_picture ? `http://127.0.0.1:8000${post.profile_picture}` : download} alt="" width="40px" height="40px" />
+                    <img src={post.profile_picture ? `${url}${post.profile_picture}` : download} alt="" width="40px" height="40px" />
                     {post.author.profile_picture}
                     <Link to={`/user-profile/${post.author.id}`} className="post-header-content">
                         <h4 onMouseEnter={(e) => handleMouseEnter(e, post.author.id)} onMouseLeave={handleMouseLeave}>

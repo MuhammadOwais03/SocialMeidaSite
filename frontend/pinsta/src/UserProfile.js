@@ -5,6 +5,7 @@ import { get_friend_status, acceptFollow, followRequest, changePic, getSavedPost
 import { useParams } from "react-router-dom";
 import RenderButton from './RenderButton';
 import { LoadingSpinner } from './LoadingSpinner.js';
+import { url } from './image_source.js';
 // import './Sidebar.css';
 
 export const UserProfile = ({
@@ -118,7 +119,7 @@ export const UserProfile = ({
                                     <>
                                         <img
                                             src={data.friendStatus.friend_request_profile.profile_picture
-                                                ? `http://127.0.0.1:8000${data.friendStatus.friend_request_profile.profile_picture}`
+                                                ? `${url}${data.friendStatus.friend_request_profile.profile_picture}`
                                                 : default_image}
                                             alt=""
                                         />
@@ -126,12 +127,12 @@ export const UserProfile = ({
                                 ) : (
                                     <>
                                         {profPic !== "" ? <img
-                                            src={`http://127.0.0.1:8000${profPic}`}
+                                            src={`${url}${profPic}`}
                                             alt=""
                                         /> : (
                                             <img
                                                 src={data.friendStatus.friend_request_profile.profile_picture
-                                                    ? `http://127.0.0.1:8000${data.friendStatus.friend_request_profile.profile_picture}`
+                                                    ? `${url}${data.friendStatus.friend_request_profile.profile_picture}`
                                                     : default_image}
                                                 alt=""
                                             />
@@ -237,10 +238,10 @@ export const UserProfile = ({
                                                         <div className="post-img">
                                                             {p.post_type.toLowerCase() === 'image' ?
 
-                                                                <img src={`http://127.0.0.1:8000${p.post_image}`} alt="" />
+                                                                <img src={`${url}${p.post_image}`} alt="" />
                                                                 : (
                                                                     <video controls loop>
-                                                                        <source src={`http://127.0.0.1:8000${p.video_file}`} type="video/mp4" />
+                                                                        <source src={`${url}${p.video_file}`} type="video/mp4" />
                                                                     </video>
                                                                 )}
 
@@ -271,10 +272,10 @@ export const UserProfile = ({
                                                                 <div className="post-img">
                                                                     {save.post.post_type === 'image' ?
 
-                                                                        <img src={`http://127.0.0.1:8000${save.post.post_image}`} alt="" />
+                                                                        <img src={`${url}${save.post.post_image}`} alt="" />
                                                                         :
                                                                         <video controls loop>
-                                                                            <source src={`http://127.0.0.1:8000${save.post.video_file}`} type="video/mp4" />
+                                                                            <source src={`${url}${save.post.video_file}`} type="video/mp4" />
                                                                         </video>
                                                                     }
                                                                 </div>

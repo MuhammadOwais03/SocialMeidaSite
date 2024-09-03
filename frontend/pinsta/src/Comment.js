@@ -1,5 +1,6 @@
 import React from 'react';
 import './Home.css';
+import { url } from './image_source';
 
 
 
@@ -42,7 +43,7 @@ const Comment = ({ comment, commentId }) => {
     return (
         <div className="comment">
             <div className="comment-header">
-                <img src={`http://127.0.0.1:8000${comment.user_profile.profile_picture}`} alt="" width="40px" height="40px" />
+                <img src={`${url}${comment.user_profile.profile_picture}`} alt="" width="40px" height="40px" />
                 <h5>{comment.user_profile.user.username}</h5>
             </div>
             <div className="comment-main">

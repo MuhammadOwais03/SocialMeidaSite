@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import RenderButton from "./RenderButton.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
 import download from './download.jpeg'
+import {url} from './image_source.js'
 
 
 
@@ -239,12 +240,13 @@ const Sidebar = ({ authorizedUser,
   return (
     Object.keys(authorizedUser).length ? (
       <>
-        <div className={`sidebar ${sidebarClass}`}>
-          {heading === "" ? (
+        <div className={`sidebar reduced-width ${sidebarClass}`}>
+        <h1 className="pic-heading"><i className="fa-brands fa-instagram"></i></h1>
+          {/* {heading === "" ? (
             <h1 className="lobster-bold">Pinstagram</h1>
           ) : (
             <h1 className="pic-heading"><i className="fa-brands fa-instagram"></i></h1>
-          )}
+          )} */}
 
           <div className="content_side">
             <div className="main_side">
@@ -295,7 +297,7 @@ const Sidebar = ({ authorizedUser,
                 {hasUserData ? (
                   <>
                     <img
-                      src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${profPic}` : 'default_profile_picture_url'}
+                      src={authorizedUser.profile_picture ? `${url}${profPic}` : 'default_profile_picture_url'}
                       alt="Profile"
                     />
                     <h3>{authorizedUser.user.username}</h3>
@@ -330,7 +332,7 @@ const Sidebar = ({ authorizedUser,
                           <div className="notification-card-head">
                             <div className="inside-logo">
                               <img
-                                src={notification.profile_picture?`http://127.0.0.1:8000${notification.profile_picture}`:download}
+                                src={notification.profile_picture?`${url}${notification.profile_picture}`:download}
                                 alt={notification.by_user.username}
                                 width="50px"
                                 height="50px"
@@ -388,7 +390,7 @@ const Sidebar = ({ authorizedUser,
                         <div className="inside-main">
                           <div className="inside-logo">
                             <img
-                              src={data.profile_picture?`http://127.0.0.1:8000${data.profile_picture}`:download}
+                              src={data.profile_picture?`${url}${data.profile_picture}`:download}
                               alt={`${data.full_name} profile`}
                               width="50px"
                               height="50px"

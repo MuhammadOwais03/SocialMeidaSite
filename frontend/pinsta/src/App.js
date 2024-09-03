@@ -17,7 +17,7 @@ import Edit from './Edit.js';
 import useWebSocket from './useWebSockets.js';
 
 function App() {
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const hideSidebar = location.pathname === '/auth'; // Hide Sidebar on the Auth page
@@ -35,7 +35,8 @@ function App() {
   const [bio, setBio] = useState("")
   const [profPic, setProfPic] = useState("")
 
-  const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+  const { messages } = useWebSocket(`ws://192.168.100.11:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+
 
   useEffect(() => {
     setEdit('edit-not-active')
@@ -85,10 +86,10 @@ function App() {
             console.log(status_code)
             return navigate('/auth');;
           }
-  
+
           // Fetch user info if token is valid
           let data = await getUserInfo();
-  
+
           if (isObject(data)) {
             setAuthorizedUser(data);
           }
@@ -97,7 +98,7 @@ function App() {
         console.error('Error in fetchData:', error);
       }
     }
-  
+
     fetchData();
   }, []);
 
@@ -193,21 +194,21 @@ function App() {
 
             />
 
-            
+
 
           </>
         ) : (
           <Route
-              path="/auth"
-              element={
-                <Auth
-                  setTickerActive={setTickerActive}
-                  setTickerContent={setTickerContent}
-                  notifyChannelCount={notifyChannelCount}
+            path="/auth"
+            element={
+              <Auth
+                setTickerActive={setTickerActive}
+                setTickerContent={setTickerContent}
+                notifyChannelCount={notifyChannelCount}
 
-                />
-              }
-            />
+              />
+            }
+          />
         )}
 
 

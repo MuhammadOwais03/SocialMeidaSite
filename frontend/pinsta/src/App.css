@@ -11,8 +11,13 @@
   font-weight: 400;
   font-style: normal;
   /* overflow-y: hidden; */
+  overflow-x: hidden;
 
 
+}
+
+*::-webkit-scrollbar{
+  display: none;
 }
 
 .lobster-regular {
@@ -291,6 +296,7 @@ a {
   background-color: #007bff;
   margin:auto;
   border-radius: 10px;
+  margin-top: 1rem;
 }
 
 
@@ -349,3 +355,12 @@ a {
     transform: rotate(360deg);
   }
 }
+
+@media only screen and (max-width: 720px)  {
+  .create-post-container {
+    top: 0%;
+    width: 100%;
+    height: 90%;
+  }
+}
+

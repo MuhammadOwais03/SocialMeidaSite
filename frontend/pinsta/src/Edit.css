@@ -31,7 +31,7 @@
 
 .edit-inside-container{
     width: 100%;
-    height: 100%;
+    /* height: 100%; */
     padding: 0.6rem 0;
   }
   
@@ -44,20 +44,23 @@
 
 .edit-inside-container form {
     width: 92.7%;
-    height: 83.9%;
+    /* height: 83.9%; */
     display: flex;
     justify-content: center;
     align-items: center;
     /* background-color: saddlebrown; */
     border-bottom-left-radius:  20px;
     border-bottom-right-radius:  20px;
-    padding: 1.7rem;
+    padding: 1rem;
+    padding-top: 1.7rem;
     
     flex-direction: column;
 }
 
 .edit-inside-container form  button {
     height: 30px;
+    margin-left: 0;
+
 }
 
   .bio, .username, .full_name {
@@ -76,7 +79,7 @@
 
 .edit-inside-container .bio textarea {
     width: 100%;
-    min-height: 40px; /* Minimum height */
+    max-height: 100px; /* Minimum height */
     height: 300px; /* Maximum height to prevent it from growing too large */
     margin-bottom: 10px; /* Add spacing below the input */
     font-size: 16px; /* Adjust font size as needed */
@@ -99,3 +102,36 @@
     bottom: 20%;
 }
   
+
+@media only screen and (max-width: 720px) {
+  .edit-container {
+    top: 5%;
+    width: 288px;
+    /* height: 630px;  */
+    /* top: 0; */
+  }
+
+  .edit-inside-container{
+    /* height: 99%; */
+  }
+
+  .edit-inside-container input {
+    width: 90%;
+}
+.edit-inside-container .bio textarea {
+  width: 100%;
+}
+
+.edit-container button {
+  width: 200px;
+  margin-left: 1rem;
+}
+
+.edit-container form {
+  padding-left: 1rem;
+}
+
+}
+/* top: 5%;
+    width: 288px;
+    height: 585px; */

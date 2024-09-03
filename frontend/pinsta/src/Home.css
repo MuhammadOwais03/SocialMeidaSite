@@ -23,7 +23,7 @@
 
 
 .post {
-    width: 450px;
+    width: 350px;
     position: relative;
     margin-bottom: 3rem;
     border-bottom: 1px solid black;
@@ -176,7 +176,7 @@
 
 .comment-container {
     position: fixed;
-    top: -8px;
+    top: 0px;
     left: 0;
     width: 100%;
     height: 100%;
@@ -187,7 +187,7 @@
 .comment-cont {
     width: 850px;
     background-color: white;
-    height: 700px;
+    height: 70%;
     margin: auto;
     margin-top: 2rem;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
@@ -231,7 +231,7 @@
     text-align: justify;
     margin: 0; /* Remove default margin for more control */
     background-color: #dbdbdb;
-    width: fit-content;
+    /* width: fit-content; */
     padding: 10px;
     
     border-top-right-radius: 20px;
@@ -586,4 +586,15 @@
 
 .hover-not-active {
     display: none;
+}
+
+
+@media only screen and (max-width: 720px) {
+    .home-container {
+        padding-left: 10rem;
+    }
+
+    .cut {
+        right: 10%;
+    }
 }

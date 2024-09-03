@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import defaultImage from './default_image.jpg'
 import {acceptFollow, followRequest} from './server-requests.js'
+import { url } from './image_source.js'
 
 export const Friends = ({data, removeFollowRequest, authorizedUser}) => {
 
@@ -48,7 +49,7 @@ export const Friends = ({data, removeFollowRequest, authorizedUser}) => {
                     {!data.user_profile.profile_picture?
                     <img src={defaultImage} alt="" width="50px" height="50px" />:
                     (
-                        <img src={`http://127.0.0.1:8000${data.user_profile.profile_picture}`} alt="" width="50px" height="50px" />
+                        <img src={`${url}${data.user_profile.profile_picture}`} alt="" width="50px" height="50px" />
                     )    
                 
                 }

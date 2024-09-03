@@ -18,7 +18,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+    gap: 1rem;
     width: 90%;
     /* background-color: aliceblue; */
     border-bottom: 2px solid #ededed;
@@ -175,4 +175,58 @@
 .camera i:hover {
     scale: 1.19;
     color: white;
+}
+
+@media only screen and (max-width: 720px) {
+    .user-profile-page {
+        left: 0;
+        width: 100%;
+    }
+
+    .user-profile-page-header-body {
+        /* width: 65%; */
+        /* background-color: saddlebrown; */
+        width: fit-content;
+        font-size: 12px;
+        gap: 0.5rem;
+        width: 35%;
+        padding: 1rem;
+    }
+
+    .user-profile-page-header-img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .user-profile-page-header-body-header {
+        flex-direction: column;
+        gap: 0.6rem;
+        font-size: 12px;
+    }
+
+    .user-profile-page-header-body-post-numbers {
+        font-size: 12px;
+    }
+    .user-profile-body {
+        width: 100%;
+        margin-left: 2rem;
+    }
+    .all-post-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+        justify-content: flex-start;
+        width: 95%;
+        margin-left: 1rem;
+        
+        position: relative;
+        padding-bottom: 12rem;
+    }
+
+    .all-post-container .post-img {
+        width: 120px;
+        height: 160px;
+    }
 }

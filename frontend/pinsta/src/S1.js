@@ -1,20 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-const api_base_url = `http://192.168.100.11:8000/api`;
-
-
-
-
 export function checking_token() {
     let token = localStorage.getItem('accessToken')
     if (token) return true
@@ -36,7 +19,7 @@ export async function getUserInfo() {
     const token = get_token('accessToken');
     if (token) {
         try {
-            const response = await fetch(`${api_base_url}/authenticated-user-info/`, {
+            const response = await fetch('http://127.0.0.1:8000/api/authenticated-user-info/', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -80,7 +63,7 @@ export async function getUserInfo() {
 
 export async function checkingTokenExpired() {
     try {
-        const response = await fetch(`${api_base_url}/protected/`, {
+        const response = await fetch('http://127.0.0.1:8000/api/protected/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,7 +87,7 @@ export async function checkingTokenExpired() {
 export async function signUp(data) {
     try {
 
-        const response = await fetch(`${api_base_url}/user-registration/`, {
+        const response = await fetch('http://127.0.0.1:8000/api/user-registration/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -150,7 +133,7 @@ export async function loginAuth(username, password) {
 
     try {
 
-        const response = await fetch(`${api_base_url}/login/`, {
+        const response = await fetch('http://127.0.0.1:8000/api/login/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -185,7 +168,7 @@ export async function loginAuth(username, password) {
 
 export async function fetchPost(postID) {
     try {
-        const response = await fetch(`${api_base_url}/post/${postID}`, {
+        const response = await fetch(`http://127.0.0.1:8000/api/post/${postID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -210,7 +193,7 @@ export async function fetchPost(postID) {
 
 export async function allPosts() {
 
-    const response = await fetch(`${api_base_url}/post/`, {
+    const response = await fetch('http://127.0.0.1:8000/api/post/', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -233,7 +216,7 @@ export async function LikePostRequest(post, likeType, authUserId) {
     if (likeType === "+") {
 
 
-        const response = await fetch(`${api_base_url}/like/`, {
+        const response = await fetch('http://127.0.0.1:8000/api/like/', {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -255,7 +238,7 @@ export async function LikePostRequest(post, likeType, authUserId) {
     }
 
     else if (likeType === '-') {
-        const response = await fetch(`${api_base_url}/unlike-post/`, {
+        const response = await fetch('http://127.0.0.1:8000/api/unlike-post/', {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json',
@@ -281,7 +264,7 @@ export async function LikePostRequest(post, likeType, authUserId) {
 
 export async function fetchingCommentPost(post_id) {
 
-    const response = await fetch(`${api_base_url}/comment?post=${post_id}`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/comment?post=${post_id}`, {
         method: "GET",
         headers: {
             'Content-Type': 'application/json',
@@ -302,7 +285,7 @@ export async function fetchingCommentPost(post_id) {
 
 
 export async function AddComment(content, comment_author, post) {
-    const response = await fetch(`${api_base_url}/comment/`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/comment/`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -328,7 +311,7 @@ export async function AddComment(content, comment_author, post) {
 
 
 export async function SearchUsers(name) {
-    const response = await fetch(`${api_base_url}/search?name=${name}`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/search?name=${name}`, {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${get_token('accessToken')}`
@@ -349,7 +332,7 @@ export async function SearchUsers(name) {
 export async function getNotification(user_id, type) {
     console.log(user_id)
     try {
-        const response = await fetch(`${api_base_url}/notification/?id=${user_id}&type=${type}`, {
+        const response = await fetch(`http://127.0.0.1:8000/api/notification/?id=${user_id}&type=${type}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${get_token('accessToken')}`
@@ -397,7 +380,7 @@ export async function followRequest(type, auth_user, to_user) {
     try {
         if (method === "POST") {
 
-            response = await fetch(`${api_base_url}/friend/`, {
+            response = await fetch(`http://127.0.0.1:8000/api/friend/`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -416,7 +399,7 @@ export async function followRequest(type, auth_user, to_user) {
         }
 
         else if (method === 'DELETE') {
-            response = await fetch(`${api_base_url}/friend/?auth_user=${auth_user}&to_user=${to_user}`, {
+            response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}&to_user=${to_user}`, {
                 method: "DELETE",
                 headers: {
                     'Content-Type': 'application/json',
@@ -444,7 +427,7 @@ export async function followRequest(type, auth_user, to_user) {
 
 
 export async function get_all_friends_request(auth_user) {
-    let response = await fetch(`${api_base_url}/friend/?auth_user=${auth_user}`,
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/?auth_user=${auth_user}`,
         {
             method: "GET",
             headers: {
@@ -468,7 +451,7 @@ export async function get_all_friends_request(auth_user) {
 
 
 export async function acceptFollow(instance_id) {
-    let response = await fetch(`${api_base_url}/friend/${instance_id}`,
+    let response = await fetch(`http://127.0.0.1:8000/api/friend/${instance_id}`,
         {
             method: "PATCH",
             headers: {
@@ -497,7 +480,7 @@ export async function get_friend_status(auth_id, req_id) {
     };
     console.log(auth_id, parseInt(req_id))
     try {
-        const response1 = await fetch(`${api_base_url}/search/?auth_id=${auth_id}&req_id=${parseInt(req_id)}`, {
+        const response1 = await fetch(`http://127.0.0.1:8000/api/search/?auth_id=${auth_id}&req_id=${parseInt(req_id)}`, {
             method: "GET",
             headers: headers
         });
@@ -509,7 +492,7 @@ export async function get_friend_status(auth_id, req_id) {
         const result1 = await response1.json();
         console.log(result1);
 
-        const response2 = await fetch(`${api_base_url}/user-info/${req_id}`, {
+        const response2 = await fetch(`http://127.0.0.1:8000/api/user-info/${req_id}`, {
             method: "GET",
             headers: headers
         });
@@ -520,7 +503,7 @@ export async function get_friend_status(auth_id, req_id) {
 
         const result2 = await response2.json();
         console.log(result2);
-        const response3 = await fetch(`${api_base_url}/post/?req_id=${req_id}`, {
+        const response3 = await fetch(`http://127.0.0.1:8000/api/post/?req_id=${req_id}`, {
             method: "GET",
             headers: headers
         });
@@ -542,7 +525,7 @@ export async function get_friend_status(auth_id, req_id) {
 }
 
 export async function createPost(formData) {
-    const response = await fetch(`${api_base_url}/post/`, {
+    const response = await fetch('http://127.0.0.1:8000/api/post/', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${get_token('accessToken')}`
@@ -564,7 +547,7 @@ export async function changePic(id, file) {
     formData.append('id', id);
     formData.append('file', file)
     formData.append('type', 'image')
-    const response = await fetch(`${api_base_url}/user-info/${id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/user-info/${id}/`, {
         method: 'PATCH',
         headers: {
             'Authorization': `Bearer ${get_token('accessToken')}`
@@ -584,7 +567,7 @@ export async function changePic(id, file) {
 
 
 export async function editProfile(fullName, username, bio, id) {
-    const response = await fetch(`${api_base_url}/user-info/${id}/`,{
+    const response = await fetch(`http://127.0.0.1:8000/api/user-info/${id}/`,{
         method:"PATCH",
         headers: {
             'Content-Type': 'application/json',
@@ -612,7 +595,7 @@ export async function editProfile(fullName, username, bio, id) {
 
 
 export async function savedPost(user_id, post_id) {
-    const response = await fetch(`${api_base_url}/saved/`, {
+    const response = await fetch('http://127.0.0.1:8000/api/saved/', {
         method:"POST",
         headers: {
             'Content-Type': 'application/json',
@@ -635,7 +618,7 @@ export async function savedPost(user_id, post_id) {
 }
 
 export async function getSavedPost(user_id) {
-    const response = await fetch(`${api_base_url}/saved/`, {
+    const response = await fetch("http://127.0.0.1:8000/api/saved/", {
         method:"GET",
         headers: {
             'Content-Type': 'application/json',
@@ -655,7 +638,7 @@ export async function getSavedPost(user_id) {
 }
 
 export async function getOnHover(id) {
-    const response = await fetch(`${api_base_url}/on-hover/?id=${id}`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/on-hover/?id=${id}`, {
         method:"GET",
         headers: {
             'Content-Type': 'application/json',
