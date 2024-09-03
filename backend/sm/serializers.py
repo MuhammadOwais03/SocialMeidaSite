@@ -19,10 +19,16 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
 
     user = UserSerializer()
+    followers = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = "__all__"
+
+    def get_followers(self, obj):
+        
+        followers_count = FriendAccepted.objects.filter(Q(user=obj.user)).count()
+        return followers_count
 
 
 from django.contrib.auth import authenticate
@@ -160,6 +166,8 @@ class PostSerializer(serializers.ModelSerializer):
     like_obj = serializers.SerializerMethodField()
     saved_by_user = serializers.SerializerMethodField()
     profile_picture = serializers.SerializerMethodField()
+    # followers = serializers.SerializerMethodField()
+    # post_count = serializers.SerializerMethodField()
     # like_by_auth_user = serializers.SerializerMethodField()
 
     class Meta:
@@ -186,20 +194,31 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_profile_picture(self, obj):
         try:
-            
+
             user_profile_picture = UserProfile.objects.get(
                 user=obj.author
             ).profile_picture
 
-            
             if user_profile_picture and hasattr(user_profile_picture, "url"):
                 return user_profile_picture.url
             else:
-                
-                return ""  
+
+                return ""
         except UserProfile.DoesNotExist:
-           
-            return ""  
+
+            return ""
+        
+    # def get_followers(self, obj):
+    #     request = self.context.get("request")
+    #     if request and request.user.is_authenticated:
+    #         followers_count = FriendAccepted.objects.filter(Q(user=request.user)).count()
+    #     return followers_count if followers_count else 0
+    
+    # def get_post_count(self, obj):
+    #     request = self.context.get("request")
+    #     if request and request.user.is_authenticated:
+    #         post_count = Post.objects.filter(Q(author=request.user)).count()
+    #     return post_count if post_count else 0
 
 
 class SavedPostSerializer(serializers.ModelSerializer):

@@ -32,6 +32,7 @@ urlpatterns = [
         name="get-user-info",
     ),
     path("unlike-post/", unlike_post, name="unlike-post"),
+    path("on-hover/", on_hover, name="on-hover")
 ]
 
 urlpatterns += router.urls

@@ -365,7 +365,9 @@ class PostViewSet(viewsets.ModelViewSet):
         )
 
         # Retrieve posts authored by friends or the authenticated user
-        queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user)).order_by("-created_at")
+        queryset = Post.objects.filter(Q(author__in=friends) | Q(author=user)).order_by(
+            "-created_at"
+        )
 
         # Sort posts by created_at in descending order (most recent first)
         return queryset
@@ -715,3 +717,21 @@ class MyProtectedView(APIView):
             user_ = User.objects.get(username=username)
             # print(user_.id)
         return Response(username)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def on_hover(request):
+    user = request.user
+
+    user_id = request.query_params.get('id')
+
+    user = User.objects.get(id = user_id)
+
+    post = Post.objects.filter(author=user)
+    post_count = post.count()
+
+    follower = FriendAccepted.objects.filter(user=user)
+    follwer_count = follower.count()
+
+    return Response({'post_count':post_count, 'follower_count':follwer_count})
