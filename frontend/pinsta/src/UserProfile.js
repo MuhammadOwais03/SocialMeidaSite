@@ -191,7 +191,7 @@ export const UserProfile = ({
                                 </div>
                                 <div className="user-profile-page-header-body-post-numbers">
                                     <p>{data.post.length} posts</p>
-                                    <p>{data.friendStatus.followers} followers</p>
+                                    <p>{data.friendStatus.friend_request_profile.followers} followers</p>
 
                                 </div>
                                 <div className="user-profile-page-header-body-names">

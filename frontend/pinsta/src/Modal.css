@@ -12,7 +12,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background: transparent;
     border-radius: 8px;
     /* padding: 20px; */
     position: relative;
@@ -23,14 +23,11 @@
 
 .modal-image {
     width: 100%;
-    height:90%;
+    /* height:90%; */
     border-radius: 20px;
     object-fit: contain;
 }
 
-.author-name {
-    height: 10%;
-}
 
 .modal-close {
     position: absolute;

@@ -48,10 +48,10 @@ const Comment = ({ comment, commentId }) => {
             <div className="comment-main">
                 <p>{comment.content}</p>
             </div>
-            <div className="comment-footer">
+            {/* <div className="comment-footer">
                 <p>{comment.created_at}</p>
 
-            </div>
+            </div> */}
         </div>
     );
 };

@@ -641,3 +641,23 @@ export async function getSavedPost(user_id) {
     console.log(result)
     return result;
 }
+
+export async function getOnHover(id) {
+    const response = await fetch(`http://127.0.0.1:8000/api/on-hover/?id=${id}`, {
+        method:"GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${get_token('accessToken')}`
+        },
+    })
+
+    if (!response.ok) {
+        console.log("Status Code: ", response.status)
+        return response.status
+        
+    }
+
+    const result = await response.json();
+    console.log(result)
+    return result;
+}

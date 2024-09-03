@@ -7,7 +7,7 @@ const Modal = ({ isOpen, onClose, imageSrc, authorName }) => {
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <h3 className='author-name'>{authorName}</h3>
+                {/* <h3 className='author-name'>{authorName}</h3> */}
 
                 <img src={imageSrc} alt="Popup" className="modal-image" />
                 <button className="modal-close" onClick={onClose}><i className="fa-solid fa-x"></i></button>

@@ -111,6 +111,7 @@ box-icon {
     transition: all 1s ease;
     background-color: #ffff;
     z-index: 1;
+    overflow-x: hidden
 }
 
 
@@ -118,7 +119,7 @@ box-icon {
     left: -1400px;
 }
 .search_container_active {
-    left: 6.4%;
+    left: 4.6%;
 }
 
 .search_container h1
@@ -141,6 +142,9 @@ box-icon {
     background-color: rgb(98%, 98%, 98%);
     border-radius: 2px;
     padding-left: 2.5rem;
+    height: 30px;
+    outline: none;
+    font-size: 18px;
     
 }
 
@@ -148,11 +152,13 @@ box-icon {
     position: absolute;
     left: 8%;
     top: 39%;
+    
 }
 .search_form i {
     position: absolute;
     right: 12%;
     top: 42%;
+    
 }
 
 /* .search_form i {
@@ -291,7 +297,16 @@ i, svg {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    overflow: scroll
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.search-cont::-webkit-scrollbar{
+    /* display: none; */
+    /* width: 20px; */
+    
+    width: 10px;
+    margin-left: 2px;
 }
 
 

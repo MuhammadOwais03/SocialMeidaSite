@@ -5,6 +5,7 @@ import useWebSocket from './useWebSockets.js';
 import { Link } from 'react-router-dom';
 import RenderButton from "./RenderButton.js";
 import { LoadingSpinner } from "./LoadingSpinner.js";
+import download from './download.jpeg'
 
 
 
@@ -297,7 +298,7 @@ const Sidebar = ({ authorizedUser,
                       src={authorizedUser.profile_picture ? `http://127.0.0.1:8000${profPic}` : 'default_profile_picture_url'}
                       alt="Profile"
                     />
-                    <h3>{authorizedUser.user.username}  {authorizedUser.user.id}</h3>
+                    <h3>{authorizedUser.user.username}</h3>
                   </>
                 ) : (
                   <>
@@ -329,7 +330,7 @@ const Sidebar = ({ authorizedUser,
                           <div className="notification-card-head">
                             <div className="inside-logo">
                               <img
-                                src={`http://127.0.0.1:8000${notification.profile_picture}`}
+                                src={notification.profile_picture?`http://127.0.0.1:8000${notification.profile_picture}`:download}
                                 alt={notification.by_user.username}
                                 width="50px"
                                 height="50px"
@@ -387,7 +388,7 @@ const Sidebar = ({ authorizedUser,
                         <div className="inside-main">
                           <div className="inside-logo">
                             <img
-                              src={`http://127.0.0.1:8000${data.profile_picture}`}
+                              src={data.profile_picture?`http://127.0.0.1:8000${data.profile_picture}`:download}
                               alt={`${data.full_name} profile`}
                               width="50px"
                               height="50px"
@@ -398,13 +399,13 @@ const Sidebar = ({ authorizedUser,
                             <p>@{data.username}</p>
                           </div>
                         </div>
-                        <div className="friend-content">
+                        {/* <div className="friend-content">
                           {data.user.id === authorizedUser.user.id ? (
                             <></>
                           ) : (
                             <RenderButton data={data.friendship_status} auth_user={authorizedUser.user.id} to_user={data.id} />
                           )}
-                        </div>
+                        </div> */}
                       </div>
                     ))
                   ) : (

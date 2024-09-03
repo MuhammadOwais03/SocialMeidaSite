@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { LikePostRequest, AddComment, savedPost, fetchingCommentPost } from './server-requests';
+import { LikePostRequest, AddComment, savedPost, fetchingCommentPost, getOnHover } from './server-requests';
 import download from './download.jpeg';
 import './Home.css';
 import Modal from './Modal'; // Import the Modal component
+import { LoadingSpinner } from './LoadingSpinner';
+import { Link } from 'react-router-dom';
 
 
 function timeSince(dateString) {
@@ -56,7 +58,8 @@ const Post = ({
     const [fillColor, setFillColor] = useState('none');
     const [isImageOpen, setIsImageOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [onHoverData, setOnHoverData] = useState(null)
+    const [hoverShow, setHoverShow] = useState('hover-not-active')
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -87,7 +90,7 @@ const Post = ({
             (error) => console.error('Error fetching comment:', error)
         );
         if (commentId) {
-            
+
         }
     }
 
@@ -129,8 +132,8 @@ const Post = ({
         }
     }, [likeUsers, authorizedUser]);
 
-    useEffect(()=>{
-        if (post.saved_by_user){
+    useEffect(() => {
+        if (post.saved_by_user) {
             setFillColor(true)
         }
     }, [])
@@ -205,14 +208,14 @@ const Post = ({
 
     let mainContent, captionContent;
     if (post.post_type === 'image') {
-        mainContent = 
-        <img 
-        src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`} 
-        alt="" 
-        width="750" 
-        height="500" 
-        onClick={openModal} 
-        />;
+        mainContent =
+            <img
+                src={post.post_image.includes('http') ? post.post_image : `http://127.0.0.1:8000${post.post_image}`}
+                alt=""
+                width="750"
+                height="500"
+                onClick={openModal}
+            />;
         captionContent = (
             <p>
                 {post.caption && (
@@ -276,74 +279,132 @@ const Post = ({
         captionContent = "";
     }
 
+    const commentInputFocus = (post_id) => {
+        let elements = document.querySelectorAll('.comment-input');
+
+        elements.forEach((element) => {
+            if (element.getAttribute('data-post-id') == post_id) {
+                element.focus();
+            }
+        });
+    };
+
+    const handleMouseEnter = (e, id) => {
+        console.log(e.target, id)
+        setHoverShow('hover-active')
+        getOnHover(id).then(
+            res => setOnHoverData(res)
+        )
+    }
+
+    const handleMouseLeave = () => {
+        setOnHoverData(null)
+        setHoverShow('hover-not-active')
+    }
+
     return (
         <>
-        <div className="post">
-            <div className="post-header">
-                <img src={post.profile_picture?`http://127.0.0.1:8000${post.profile_picture}`:download} alt="" width="40px" height="40px" />
-                {post.author.profile_picture}
-                <div className="post-header-content">
-                    <h4>{`${post.author.first_name} ${post.author.last_name} @${post.author.username} ${post.id}`}</h4>
-                    <p>{Time}</p>
+            <div className="post">
+                <div className="post-header">
+                    <img src={post.profile_picture ? `http://127.0.0.1:8000${post.profile_picture}` : download} alt="" width="40px" height="40px" />
+                    {post.author.profile_picture}
+                    <Link to={`/user-profile/${post.author.id}`} className="post-header-content">
+                        <h4 onMouseEnter={(e) => handleMouseEnter(e, post.author.id)} onMouseLeave={handleMouseLeave}>
+                            {`${post.author.first_name} ${post.author.last_name}`} <br />
+                            <span>{`@${post.author.username}`}</span>
+                            <div className={`hover-name-container ${hoverShow}`} >
+                                {onHoverData ? (
+                                    <>
+                                        <div className="hover-name-header">
+                                            <div className="hover-name-image">
+                                                <img src={post.profile_picture ? `http://127.0.0.1:8000${post.profile_picture}` : download} alt="" />
+                                                {post.author.profile_picture}
+                                            </div>
+                                            <Link to={`/user-profile/${post.author.id}`} className="hover-name-content">
+                                                <h4>
+                                                    {`${post.author.first_name} ${post.author.last_name}`} <br />
+                                                    <span>{`@${post.author.username}`}</span>
+                                                </h4>
+                                            </Link>
+
+                                        </div>
+                                        <div className="hover-name-body">
+                                            <div className="post-count">Post: {onHoverData.post_count}</div>
+                                            <span className='separator-line' ></span>
+                                            <div className="follower-count">Followers: {onHoverData.follower_count}</div>
+                                        </div>
+                                    </>
+                                ) :
+                                    (
+                                        <LoadingSpinner />
+                                    )}
+
+                            </div>
+                        </h4>
+
+                        <p>{Time}</p>
+                    </Link>
                 </div>
-            </div>
-            <div className="post-main">
-                {mainContent}
-            </div>
-            <div className="post-footer">
-                <div className="post-other-actions">
-                    <div className="post-like-share-comment">
-                        {isLikeAuth
-                            ? <i className="fa-solid fa-heart" onClick={handleLike}></i>
-                            : <i className="fa-regular fa-heart" onClick={handleLike}></i>}
-                        <i className="fa-regular fa-message"></i>
-                        <i className="fa-duotone fa-solid fa-share"></i>
+                <div className="post-main">
+                    {mainContent}
+                </div>
+                <div className="post-footer">
+                    <div className="post-other-actions">
+                        <div className="post-like-share-comment">
+                            {isLikeAuth
+                                ? <i className="fa-solid fa-heart" onClick={handleLike}></i>
+                                : <i className="fa-regular fa-heart" onClick={handleLike}></i>}
+                            <i className="fa-regular fa-message" onClick={() => commentInputFocus(post.id)}></i>
+                            <i className="fa-duotone fa-solid fa-share"></i>
+                        </div>
+                        <svg
+                            width="25"
+                            height="25"
+                            viewBox="0 0 24 24"
+                            onClick={handleSavedClick}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <polygon
+                                fill={fillColor}
+                                points="20 21 12 13.44 4 21 4 3 20 3 20 21"
+                                stroke="black"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                            />
+                        </svg>
+
                     </div>
-                    <svg
-                        width="25"
-                        height="25"
-                        viewBox="0 0 24 24"
-                        onClick={handleSavedClick}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <polygon
-                            fill={fillColor}
-                            points="20 21 12 13.44 4 21 4 3 20 3 20 21"
-                            stroke="black"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                        />
-                    </svg>
+                    <p className={`like-post-${post.id}`}>{likesCount} Likes</p>
+                    <div className="post-caption">{captionContent}</div>
+                    <div className="comments">
+                        <p onClick={() => {
+                            setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
+                            setCommentId(post.id);
+                            get_comments()
 
+                        }}>
+                            {`View ${commentCount} comments`}
+                        </p>
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="text"
+                                placeholder='Add a comment...'
+                                value={addComment}
+                                onChange={handleChange}
+                                className='comment-input'
+                                data-post-id={post.id}
+                            />
+                            <button type='submit'>Add</button>
+                        </form>
+
+                    </div>
                 </div>
-                <p className={`like-post-${post.id}`}>{likesCount} Likes</p>
-                <div className="post-caption">{captionContent}</div>
-                <div className="comments">
-                    <p onClick={() => {
-                        setClose(close === "comment-not-active" ? "comment-active" : "comment-not-active");
-                        setCommentId(post.id);
-                        get_comments()
 
-                    }}>
-                        {`View ${commentCount} comments`}
-                    </p>
-                    <form onSubmit={handleSubmit}>
-                        <input
-                            type="text"
-                            placeholder='Add a comment...'
-                            value={addComment}
-                            onChange={handleChange}
-                        />
-                        <button type='submit'>Add</button>
-                    </form>
-
-                </div>
             </div>
-        </div>
-        
-        
-        <Modal isOpen={isModalOpen} onClose={closeModal} imageSrc={post.post_image} authorName={`${post.author.first_name} ${post.author.last_name}`} />
+
+
+            <Modal isOpen={isModalOpen} onClose={closeModal} imageSrc={post.post_image} authorName={`${post.author.first_name} ${post.author.last_name}`} />
         </>
     );
 }
