@@ -42,7 +42,7 @@ export const Friends = ({data, removeFollowRequest, authorizedUser}) => {
     
   return (
     <>
-        <h2>Follow Requests</h2>
+        
         <div className='follow-card' >
             <div className="follow-card-header">
                 <div className="follow-card-header-img">

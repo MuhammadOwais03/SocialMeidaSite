@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { get_token, fetchingCommentPost, get_all_friends_request, fetchPost } from './server-requests';
 import { Friends } from './Friends.js';
 import Post from './Post.js';
@@ -22,6 +22,13 @@ export const HomePost = ({
     const [comments, setComments] = useState([]);
     const [commentId, setCommentId] = useState();
     const [posts, setPosts] = useState("");
+
+    const location = useLocation();
+
+    useEffect(()=>{
+        
+        setTickerActive('ticker-not-active')
+    }, [location.pathname])
 
     useEffect(() => {
         async function post() {
@@ -136,11 +143,11 @@ export const HomePost = ({
                 </div>
             </div>
             <div className="follow_container">
-                {followRequestData.length > 0 ? (
+                {/* {followRequestData.length > 0 ? (
                     followRequestData.map((data, index) => (
                         <Friends key={index} data={data} removeFollowRequest={removeFollowRequest} authorizedUser={authorizedUser} />
                     ))
-                ) : null}
+                ) : null} */}
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {  get_all_friends_request } from './server-requests';
-
+import {  useLocation } from "react-router-dom";
 import './Home.css';
 
 import { Friends } from './Friends.js';
@@ -32,6 +32,14 @@ const Home = ({
     //     return get_comment_response;
     // }
 
+    const location = useLocation();
+
+    useEffect(()=>{
+        
+        setTickerActive('ticker-not-active')
+    }, [location.pathname])
+
+    
 
     useEffect(() => {
         if (messages) {
@@ -147,7 +155,7 @@ const Home = ({
                 </div>
             </div>
             <div className="follow_container">
-                {followRequestData.length > 0 ? (
+                {/* {followRequestData.length > 0 ? (
                     <>
                         {followRequestData.map((data, index) => (
                             <Friends key={index} data={data} removeFollowRequest={removeFollowRequest} authorizedUser={authorizedUser} />
@@ -155,7 +163,7 @@ const Home = ({
                     </>
                 ) : (
                     ""
-                )}
+                )} */}
 
             </div>
         </div>

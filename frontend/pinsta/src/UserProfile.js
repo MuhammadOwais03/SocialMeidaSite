@@ -71,7 +71,7 @@ export const UserProfile = ({
     const onAcceptHandle = async () => {
         try {
             // Execute follow request
-            await acceptFollow(data.id);
+            await acceptFollow(data.userInfo.id);
 
             // Call removePost to remove this post from the UI
             // removeFollowRequest(data.id);
@@ -84,7 +84,7 @@ export const UserProfile = ({
     const onRejectHandle = async () => {
         try {
             // Execute follow request
-            await followRequest('btn-pending', data.user_profile.id, authorizedUser.user.id);
+            await followRequest('btn-pending', data.userInfo.id, authorizedUser.user.id);
 
             // Call removePost to remove this post from the UI
             // removeFollowRequest(data.id);
@@ -115,14 +115,32 @@ export const UserProfile = ({
                     <>
                         <div className="user-profile-page-header">
                             <div className="user-profile-page-header-img">
-                                {authorizedUser.user.id !== data.friendStatus.friend_request_profile.id ? (
+                                {authorizedUser.user.id !== data.userInfo.id ? (
                                     <>
-                                        <img
+                                        {data.userInfo.id === data.friendStatus.friend_request_profile.id?
+                                        (
+                                            <>
+                                            <img
                                             src={data.friendStatus.friend_request_profile.profile_picture
                                                 ? `${url}${data.friendStatus.friend_request_profile.profile_picture}`
                                                 : default_image}
                                             alt=""
                                         />
+                                            </>
+                                        )  :
+                                        (
+                                            <>
+                                                <img
+                                            src={data.friendStatus.user_profile.profile_picture
+                                                ? `${url}${data.friendStatus.user_profile.profile_picture}`
+                                                : default_image}
+                                            alt=""
+                                        />
+                                            </>
+                                        )  
+                                    
+                                    }
+                                        
                                     </>
                                 ) : (
                                     <>
@@ -131,8 +149,8 @@ export const UserProfile = ({
                                             alt=""
                                         /> : (
                                             <img
-                                                src={data.friendStatus.friend_request_profile.profile_picture
-                                                    ? `${url}${data.friendStatus.friend_request_profile.profile_picture}`
+                                                src={data.userInfo.profile_picture
+                                                    ? `${url}${data.userInfo.profile_picture}`
                                                     : default_image}
                                                 alt=""
                                             />
@@ -162,7 +180,7 @@ export const UserProfile = ({
                                     {/* <button>Edit Profile</button> */}
                                     {authorizedUser.user.id !== data.friendStatus.friend_request_profile.id ? (
                                         <>
-                                            <h4>{data.friendStatus.friend_request_profile.full_name}</h4>
+                                            <h4>{data.userInfo.full_name}</h4>
                                             {data.friendStatus.is_pending ? (
                                                 <RenderButton data="requested" auth_user={authorizedUser.user.id} to_user={id} />
                                             ) : (
@@ -174,16 +192,19 @@ export const UserProfile = ({
                                             )}
                                         </>
                                     ) : (
-                                        data.friendStatus.friend_request_profile.id === authorizedUser.user.id ? (
+                                        data.userInfo.id === authorizedUser.user.id ? (
                                             <>
                                                 <h4>{fullName}</h4>
                                                 <button onClick={() => setEdit('edit-active')}>Edit Profile</button>
                                             </>
                                         ) : (
-                                            <div className="follow-card-body">
-                                                <button onClick={() => onRejectHandle()}>Reject</button>
-                                                <button onClick={() => onAcceptHandle('accept')}>Accept</button>
-                                            </div>
+                                            <>
+                                                <h4>{data.userInfo.full_name}</h4>
+                                                <div className="follow-card-body">
+                                                    <button onClick={() => onRejectHandle()}>Reject</button>
+                                                    <button onClick={() => onAcceptHandle('accept')}>Accept</button>
+                                                </div>
+                                            </>
                                         )
                                     )}
 
@@ -192,15 +213,30 @@ export const UserProfile = ({
                                 </div>
                                 <div className="user-profile-page-header-body-post-numbers">
                                     <p>{data.post.length} posts</p>
-                                    <p>{data.friendStatus.friend_request_profile.followers} followers</p>
+                                    <p>{data.userInfo.followers} followers</p>
 
                                 </div>
                                 <div className="user-profile-page-header-body-names">
-                                    {authorizedUser.user.id !== data.friendStatus.friend_request_profile.id ?
+                                    {authorizedUser.user.id !== data.userInfo.id ?
                                         (<>
+                                            {data.friendStatus.UserProfile && data.userInfo.id === data.friendStatus.user_profile.id?
+                                            (
+                                                <>
+                                                <h4>{data.friendStatus.user_profile.full_name}</h4>
+                                                <p>@{data.friendStatus.user_profile.username}</p>
+                                                </>
 
-                                            <h4>{data.friendStatus.friend_request_profile.full_name}</h4>
-                                            <p>@{data.friendStatus.friend_request_profile.username}</p>
+                                            ):
+                                            
+                                                (
+                                                    <>
+                                                        <h4>{data.friendStatus.friend_request_profile.full_name}</h4>
+                                                        <p>@{data.friendStatus.friend_request_profile.username}</p>
+                                                    
+                                                    </>
+                                                )
+                                            }
+                                            
                                         </>) : (<>
 
                                             <h4>{fullName}</h4>
@@ -209,11 +245,20 @@ export const UserProfile = ({
 
                                 </div>
                                 <div className="user-profile-page-header-body-bio">
-                                    {authorizedUser.user.id === data.friendStatus.friend_request_profile.id && bio ? (
+                                    {authorizedUser.user.id === data.userInfo.id && bio ? (
                                         <p>{bio}</p>
                                     ) : (
-
-                                        <p>{data.friendStatus.friend_request_profile.bio}</p>
+                                        data.userInfo.id===data.friendStatus.friend_request_profile.id?(
+                                            <>
+                                                <p>{data.friendStatus.friend_request_profile.bio}</p>
+                                            </>
+                                        ):
+                                        (
+                                            <>
+                                                <p>{data.friendStatus.user_profile.bio}</p>
+                                            </>
+                                        )
+                                    
                                     )}
                                 </div>
                             </div>

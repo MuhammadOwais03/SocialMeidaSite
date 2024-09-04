@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { SearchUsers, getNotification, followRequest, get_token } from "./server-requests";
 import './Sidebar.css';
+import { useLocation } from 'react-router-dom';
 import useWebSocket from './useWebSockets.js';
 import { Link } from 'react-router-dom';
 import RenderButton from "./RenderButton.js";
@@ -34,6 +35,16 @@ const Sidebar = ({ authorizedUser,
 
 
   // const { messages } = useWebSocket(`ws://127.0.0.1:8000/ws/like-notifications/?token=${get_token('accessToken')}`);
+
+
+  const location = useLocation();
+
+    useEffect(()=>{
+        setSearchContainer('search_container_not_active')
+        setMoreContent("more-not-active")
+        setNotifyCont(false)
+        setTickerActive('ticker-not-active')
+    }, [location.pathname])
 
   useEffect(() => {
     console.log(messages); // Handle WebSocket messages here if needed
@@ -437,6 +448,11 @@ const Sidebar = ({ authorizedUser,
             </svg>
             <h3>Saved</h3>
           </div>
+          <Link to="friends/" className="more_1 more_inside">
+            {/* <box-icon name="log-out"></box-icon> */}
+            <box-icon type='solid' name='user'></box-icon>
+            <h3>Follow Request</h3>
+          </Link>
           <div className="more_1 more_inside">
             <box-icon name="log-out"></box-icon>
             <h3>Log Out</h3>

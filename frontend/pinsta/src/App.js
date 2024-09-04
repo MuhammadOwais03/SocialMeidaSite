@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { checking_token, checkingTokenExpired, allPosts, getUserInfo, get_token } from './server-requests';
+import { checking_token, checkingTokenExpired, allPosts, getUserInfo, get_token, get_all_friends_request } from './server-requests';
 import './App.css';
 
 import Auth from './auth.js';
@@ -13,6 +13,8 @@ import { HomePost } from './HomePost.js';
 import { UserProfile } from './UserProfile.js';
 import { CreatePost } from './CreatePost.js';
 import Edit from './Edit.js';
+import { Friends } from './Friends.js';
+import { FriendContainer } from './FriendContainer.js';
 
 import useWebSocket from './useWebSockets.js';
 
@@ -41,6 +43,7 @@ function App() {
   useEffect(() => {
     setEdit('edit-not-active')
     setCreate('create-not-active')
+    setTickerActive('ticker-not-active')
   }, [location.pathname])
 
   const checkAuthAndFetchPosts = async () => {
@@ -70,6 +73,10 @@ function App() {
   function isObject(value) {
     return value && typeof value === 'object' && !Array.isArray(value) && value !== null;
   }
+
+
+ 
+
 
 
 
@@ -189,6 +196,19 @@ function App() {
                   profPic={profPic}
                   setProfPic={setProfPic}
 
+                />
+              }
+
+            />
+
+            <Route
+              path='/friends/'
+              element={
+                <FriendContainer
+                  followRequestData={followRequestData}
+                  setFollowRequestData={setFollowRequestData}
+                  authorizedUser={authorizedUser}
+                
                 />
               }
 

@@ -229,4 +229,9 @@
         width: 120px;
         height: 160px;
     }
+
+    .follow-card-body button {
+        font-size: 9px;
+        padding: 9px 12px
+    }
 }
