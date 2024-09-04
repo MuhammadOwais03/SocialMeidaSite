@@ -232,15 +232,19 @@ class AuthenticatedUserViewSet(APIView):
 
 
 class FriendViewSet(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
 
     def get_object(self):
 
         obj_id = self.kwargs.get("pk")  # or any other identifier
+        user = User.objects.get(id=obj_id)
+        print(obj_id)
         try:
-            return Friend.objects.get(pk=obj_id)
+            return Friend.objects.get(user=user)
         except Friend.DoesNotExist:
+            return Friend.objects.get(friend=user)
+        except:
             raise Http404
 
     def get(self, request, *args, **kwargs):
